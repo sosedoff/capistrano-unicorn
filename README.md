@@ -12,7 +12,7 @@ gem install capistrano-unicorn
 
 Add unicorn plugin into your deploy.rb file:
 
-``ruby
+```ruby
 require 'capistrano-unicorn'
 ```
 
