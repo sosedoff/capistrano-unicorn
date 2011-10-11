@@ -15,6 +15,7 @@ Add unicorn plugin into your deploy.rb file:
 ``ruby
 require 'capistrano-unicorn'
 ```
+
 Place configuration file into config/unicorn/YOUR_ENV.rb
 
 To test if it works type:
