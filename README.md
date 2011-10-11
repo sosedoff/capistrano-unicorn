@@ -10,13 +10,15 @@ gem install capistrano-unicorn
 
 ## Usage
 
-Add unicorn plugin into your deploy.rb file:
+Add unicorn plugin into your deploy.rb file.
+
+**NOTE:** Should be placed after all hooks
 
 ```ruby
 require 'capistrano-unicorn'
 ```
 
-Place configuration file into config/unicorn/YOUR_ENV.rb
+Place configuration file into ```config/unicorn/YOUR_ENV.rb```
 
 To test if it works type:
 
