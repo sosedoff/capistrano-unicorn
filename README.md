@@ -1,6 +1,6 @@
 # Capistrano Unicorn
 
-Capistrano plugin that integrates Unicorn tasks into deployment script.
+Capistrano plugin that integrates Unicorn tasks into capistrano deployment script.
 
 ## Installation
 
@@ -26,7 +26,9 @@ Add unicorn plugin into your deploy.rb file.
 require 'capistrano-unicorn'
 ```
 
-Place configuration file into ```config/unicorn/YOUR_ENV.rb```
+This should add a unicorn server start task after ```deploy:restart```.
+
+Unicorn configuration file should be placed under ```config/unicorn/YOUR_ENV.rb```
 
 To test if it works type:
 
@@ -35,6 +37,8 @@ cap unicorn:start
 cap unicorn:stop
 cap unicorn:reload
 ```
+
+**NOTE:** This plugin uses bundler.
 
 ## Configuration options
 
