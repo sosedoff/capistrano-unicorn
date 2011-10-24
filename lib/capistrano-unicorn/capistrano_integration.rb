@@ -22,7 +22,7 @@ module CapistranoUnicorn
           task :start, :roles => :app, :except => {:no_release => true} do
             config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
             if remote_file_exists?(config_path)
-              logger.important("Starting...")
+              logger.important("Starting...", "Unicorn")
               run "cd #{current_path} && bundle exec unicorn -c #{config_path} -E #{unicorn_env} -D"
             else
               logger.important("Config file for \"#{unicorn_env}\" environment was not found at \"#{config_path}\"", "Unicorn")
