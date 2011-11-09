@@ -23,7 +23,7 @@ module CapistranoUnicorn
             config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
             if remote_file_exists?(config_path)
               logger.important("Starting...", "Unicorn")
-              run "cd #{current_path} && bundle exec unicorn -c #{config_path} -E #{unicorn_env} -D"
+              run "cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec unicorn -c #{config_path} -E #{unicorn_env} -D"
             else
               logger.important("Config file for \"#{unicorn_env}\" environment was not found at \"#{config_path}\"", "Unicorn")
             end
