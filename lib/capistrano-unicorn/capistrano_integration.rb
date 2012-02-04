@@ -15,7 +15,7 @@ module CapistranoUnicorn
         # Check if process is running
         #
         def process_exists?(pid_file)
-          capture("ps -p $(cat #{pid_file})").strip.split("\n").size == 2
+          capture("ps -p $(cat #{pid_file}) ; true").strip.split("\n").size == 2
         end
 
         # Set unicorn vars
