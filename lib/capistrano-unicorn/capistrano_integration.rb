@@ -11,6 +11,12 @@ module CapistranoUnicorn
         def remote_file_exists?(full_path)
           'true' ==  capture("if [ -e #{full_path} ]; then echo 'true'; fi").strip
         end
+        
+        # Check if process is running
+        #
+        def process_exists?(pid_file)
+          capture("ps -p $(cat #{pid_file})").strip.split("\n").size == 2
+        end
 
         # Set unicorn vars
         #
@@ -33,8 +39,12 @@ module CapistranoUnicorn
           desc 'Stop Unicorn'
           task :stop, :roles => :app, :except => {:no_release => true} do
             if remote_file_exists?(unicorn_pid)
-              logger.important("Stopping...", "Unicorn")
-              run "#{try_sudo} kill `cat #{unicorn_pid}`"
+              if process_exists?(unicorn_pid)
+                logger.important("Stopping...", "Unicorn")
+                run "#{try_sudo} kill `cat #{unicorn_pid}`"
+              else
+                logger.important("Unicorn is not running.", "Unicorn")
+              end
             else
               logger.important("No PIDs found. Check if unicorn is running.", "Unicorn")
             end
@@ -43,8 +53,12 @@ module CapistranoUnicorn
           desc 'Unicorn graceful shutdown'
           task :graceful_stop, :roles => :app, :except => {:no_release => true} do
             if remote_file_exists?(unicorn_pid)
-              logger.important("Stopping...", "Unicorn")
-              run "#{try_sudo} kill -s QUIT `cat #{unicorn_pid}`"
+              if process_exists?(unicorn_pid)
+                logger.important("Stopping...", "Unicorn")
+                run "#{try_sudo} kill -s QUIT `cat #{unicorn_pid}`"
+              else
+                logger.important("Unicorn is not running.", "Unicorn")
+              end
             else
               logger.important("No PIDs found. Check if unicorn is running.", "Unicorn")
             end
