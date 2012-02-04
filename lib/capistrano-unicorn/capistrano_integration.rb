@@ -27,6 +27,15 @@ module CapistranoUnicorn
         namespace :unicorn do
           desc 'Start Unicorn'
           task :start, :roles => :app, :except => {:no_release => true} do
+            if remote_file_exists?(unicorn_pid)
+              if process_exists?(unicorn_pid)
+                logger.important("Unicorn is already running!", "Unicorn")
+                next
+              else
+                run "rm #{unicorn_pid}"
+              end
+            end
+            
             config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
             if remote_file_exists?(config_path)
               logger.important("Starting...", "Unicorn")
@@ -43,6 +52,7 @@ module CapistranoUnicorn
                 logger.important("Stopping...", "Unicorn")
                 run "#{try_sudo} kill `cat #{unicorn_pid}`"
               else
+                run "rm #{unicorn_pid}"
                 logger.important("Unicorn is not running.", "Unicorn")
               end
             else
@@ -57,6 +67,7 @@ module CapistranoUnicorn
                 logger.important("Stopping...", "Unicorn")
                 run "#{try_sudo} kill -s QUIT `cat #{unicorn_pid}`"
               else
+                run "rm #{unicorn_pid}"
                 logger.important("Unicorn is not running.", "Unicorn")
               end
             else
