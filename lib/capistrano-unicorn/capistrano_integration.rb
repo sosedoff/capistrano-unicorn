@@ -18,6 +18,13 @@ module CapistranoUnicorn
           capture("ps -p $(cat #{pid_file}) ; true").strip.split("\n").size == 2
         end
 
+        # Returns the current process id as an integer.
+        #
+        # Returns 0 if the pidfile doesn't exist or is empty
+        def get_pid(pid_file)
+          capture("cat '#{pid_file}' 2> /dev/null || :").to_i
+        end
+
         # Set unicorn vars
         #
         _cset(:unicorn_pid, "#{fetch(:current_path)}/tmp/pids/unicorn.pid")
@@ -78,16 +85,42 @@ module CapistranoUnicorn
 
           desc 'Reload Unicorn'
           task :reload, :roles => :app, :except => {:no_release => true} do
-            if remote_file_exists?(unicorn_pid)
-              logger.important("Stopping...", "Unicorn")
-              run "#{try_sudo} kill -s USR2 `cat #{unicorn_pid}`"
-            else
+            old_pid = get_pid(unicorn_pid)
+            new_pid = 0
+            if old_pid == 0
               logger.important("No PIDs found. Starting Unicorn server...", "Unicorn")
               config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
               if remote_file_exists?(config_path)
                 run "cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c #{config_path} -E #{app_env} -D"
               else
                 logger.important("Config file for \"#{unicorn_env}\" environment was not found at \"#{config_path}\"", "Unicorn")
+              end
+            else
+              begin
+                logger.important("Shutting down old Unicorn, PID: #{old_pid}", "Unicorn")
+
+                # Start a new master
+                run "#{try_sudo} kill -s USR2 #{old_pid}"
+
+                # Wait for new pid to appear for a while...
+                countdown = 60
+                while new_pid == 0 or new_pid == old_pid
+                  new_pid = get_pid(unicorn_pid)
+                  sleep(0.5)
+                  countdown -= 1
+                  raise Capistrano::Error.new("Failed to start new Unicorn...timedout") if countdown == 0
+                end
+
+                logger.important("New Unicorn started, PID: #{new_pid}", "Unicorn")
+
+                # Switch to new master and kill the old master
+                run "#{try_sudo} kill -s WINCH #{old_pid} ; #{try_sudo} kill -s QUIT #{old_pid}"
+              rescue
+                # Restore the old master
+                logger.important("Failed to start new Unicorn, reverting to old", "Unicorn")
+                run "#{try_sudo} kill -s HUP #{old_pid} ; #{try_sudo} kill -s QUIT #{new_pid}" unless new_pid == 0
+
+                raise
               end
             end
           end
