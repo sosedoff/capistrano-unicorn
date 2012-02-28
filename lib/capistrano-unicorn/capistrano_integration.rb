@@ -91,6 +91,8 @@ module CapistranoUnicorn
               end
             end
           end
+
+          task :restart => :reload
         end
 
         after "deploy:restart", "unicorn:reload"
