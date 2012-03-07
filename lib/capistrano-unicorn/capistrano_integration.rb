@@ -92,7 +92,7 @@ module CapistranoUnicorn
             end
           end
 
-          task :restart => :reload
+          alias_task :restart, :reload
         end
 
         after "deploy:restart", "unicorn:reload"
