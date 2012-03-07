@@ -17,6 +17,21 @@ module CapistranoUnicorn
         def remote_process_exists?(pid_file)
           capture("ps -p $(cat #{pid_file}) ; true").strip.split("\n").size == 2
         end
+        
+        # Search for unicorn configuration file
+        #
+        def find_config_path
+          root_config_path = "#{current_path}/config/unicorn.rb"
+          env_config_path  = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
+          
+          config_path = case
+          when remote_file_exists?(root_config_path) then root_config_path
+          when remote_file_exists?(env_config_path)  then env_config_path
+          else nil
+          end
+          
+          [ config_path, [ root_config_path, env_config_path ] ]
+        end
 
         # Set unicorn vars
         #
@@ -37,12 +52,12 @@ module CapistranoUnicorn
               end
             end
             
-            config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
-            if remote_file_exists?(config_path)
+            config_path, searched_paths = find_config_path
+            if config_path
               logger.important("Starting...", "Unicorn")
               run "cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c #{config_path} -E #{app_env} -D"
             else
-              logger.important("Config file for \"#{unicorn_env}\" environment was not found at \"#{config_path}\"", "Unicorn")
+              logger.important("Config file for \"#{unicorn_env}\" environment was not found at #{searched_paths.join(' or ')}", "Unicorn")
             end
           end
 
@@ -83,11 +98,11 @@ module CapistranoUnicorn
               run "#{try_sudo} kill -s USR2 `cat #{unicorn_pid}`"
             else
               logger.important("No PIDs found. Starting Unicorn server...", "Unicorn")
-              config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
-              if remote_file_exists?(config_path)
+              config_path, searched_paths = find_config_path
+              if config_path
                 run "cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c #{config_path} -E #{app_env} -D"
               else
-                logger.important("Config file for \"#{unicorn_env}\" environment was not found at \"#{config_path}\"", "Unicorn")
+                logger.important("Config file for \"#{unicorn_env}\" environment was not found at #{searched_paths.join(' or ')}", "Unicorn")
               end
             end
           end
