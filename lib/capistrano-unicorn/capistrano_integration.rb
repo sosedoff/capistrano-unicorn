@@ -11,7 +11,7 @@ module CapistranoUnicorn
         def remote_file_exists?(full_path)
           'true' ==  capture("if [ -e #{full_path} ]; then echo 'true'; fi").strip
         end
-        
+
         # Check if process is running
         #
         def remote_process_exists?(pid_file)
@@ -36,7 +36,7 @@ module CapistranoUnicorn
                 run "rm #{unicorn_pid}"
               end
             end
-            
+
             config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
             if remote_file_exists?(config_path)
               logger.important("Starting...", "Unicorn")
@@ -92,7 +92,9 @@ module CapistranoUnicorn
             end
           end
 
-          task :restart => :reload
+          task :restart do
+            unicorn.reload
+          end
         end
 
         after "deploy:restart", "unicorn:reload"
