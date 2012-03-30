@@ -76,8 +76,8 @@ module CapistranoUnicorn
             end
           end
 
-          desc 'Reload Unicorn'
-          task :reload, :roles => :app, :except => {:no_release => true} do
+          desc 'Restart Unicorn'
+          task :restart, :roles => :app, :except => {:no_release => true} do
             if remote_file_exists?(unicorn_pid)
               logger.important("Stopping...", "Unicorn")
               run "#{try_sudo} kill -s USR2 `cat #{unicorn_pid}`"
@@ -92,7 +92,15 @@ module CapistranoUnicorn
             end
           end
 
-          task :restart => :reload
+          desc 'Reload Unicorn'
+          task :reload, :roles => :app, :except => {:no_release => true} do
+            if remote_file_exists?(unicorn_pid)
+              logger.important("Reloading...", "Unicorn")
+              run "#{try_sudo} kill -s HUP `cat #{unicorn_pid}`"
+            else
+              logger.important("No PIDs found. Check if unicorn is running.", "Unicorn")
+            end
+          end
         end
 
         after "deploy:restart", "unicorn:reload"
