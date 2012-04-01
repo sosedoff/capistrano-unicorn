@@ -29,7 +29,7 @@ module CapistranoUnicorn
           desc 'Start Unicorn'
           task :start, :roles => :app, :except => {:no_release => true} do
             if remote_file_exists?(unicorn_pid)
-              if process_exists?(unicorn_pid)
+              if remote_process_exists?(unicorn_pid)
                 logger.important("Unicorn is already running!", "Unicorn")
                 next
               else
