@@ -29,7 +29,7 @@ module CapistranoUnicorn
           desc 'Start Unicorn'
           task :start, :roles => :app, :except => {:no_release => true} do
             if remote_file_exists?(unicorn_pid)
-              if process_exists?(unicorn_pid)
+              if remote_process_exists?(unicorn_pid)
                 logger.important("Unicorn is already running!", "Unicorn")
                 next
               else
@@ -76,8 +76,8 @@ module CapistranoUnicorn
             end
           end
 
-          desc 'Reload Unicorn'
-          task :reload, :roles => :app, :except => {:no_release => true} do
+          desc 'Restart Unicorn'
+          task :restart, :roles => :app, :except => {:no_release => true} do
             if remote_file_exists?(unicorn_pid)
               logger.important("Stopping...", "Unicorn")
               run "#{try_sudo} kill -s USR2 `cat #{unicorn_pid}`"
@@ -92,7 +92,21 @@ module CapistranoUnicorn
             end
           end
 
-          task :restart => :reload
+          desc 'Reload Unicorn'
+          task :reload, :roles => :app, :except => {:no_release => true} do
+            if remote_file_exists?(unicorn_pid)
+              logger.important("Reloading...", "Unicorn")
+              run "#{try_sudo} kill -s HUP `cat #{unicorn_pid}`"
+            else
+              logger.important("No PIDs found. Starting Unicorn server...", "Unicorn")
+              config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
+              if remote_file_exists?(config_path)
+                run "cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c #{config_path} -E #{app_env} -D"
+              else
+                logger.important("Config file for \"#{unicorn_env}\" environment was not found at \"#{config_path}\"", "Unicorn")
+              end
+            end
+          end
         end
 
         after "deploy:restart", "unicorn:reload"
