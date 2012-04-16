@@ -31,7 +31,6 @@ module CapistranoUnicorn
             if remote_file_exists?(unicorn_pid)
               if process_exists?(unicorn_pid)
                 logger.important("Unicorn is already running!", "Unicorn")
-                next
               else
                 run "rm #{unicorn_pid}"
               end
