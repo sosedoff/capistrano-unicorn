@@ -85,12 +85,23 @@ module CapistranoUnicorn
             end
           end
 
+          desc 'Restart Unicorn'
+          task :restart, :roles => :app, :except => {:no_release => true} do
+            pid = unicorn_get_pid
+            unless pid.nil?
+              logger.important("Restarting...", "Unicorn")
+              unicorn_send_signal(pid, 'USR2')
+            else
+              unicorn.start
+            end
+          end
+
           desc 'Reload Unicorn'
           task :reload, :roles => :app, :except => {:no_release => true} do
             pid = unicorn_get_pid
             unless pid.nil?
               logger.important("Reloading...", "Unicorn")
-              unicorn_send_signal(pid, 'USR2')
+              unicorn_send_signal(pid, 'HUP')
             else
               unicorn.start
             end
