@@ -54,7 +54,13 @@ module CapistranoUnicorn
               end
             end
 
-            config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
+            primary_config_path = "#{current_path}/config/unicorn.rb"
+            if remote_file_exists?(primary_config_path)
+              config_path = primary_config_path
+            else
+              config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
+            end
+            
             if remote_file_exists?(config_path)
               logger.important("Starting...", "Unicorn")
               run "cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c #{config_path} -E #{app_env} -D"
