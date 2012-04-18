@@ -112,6 +112,28 @@ module CapistranoUnicorn
               unicorn.start
             end
           end
+
+          desc 'Add a new worker'
+          task :add_worker, :roles => :app, :except => {:no_release => true} do
+            pid = unicorn_get_pid
+            unless pid.nil?
+              logger.important("Adding a new worker...", "Unicorn")
+              unicorn_send_signal(pid, "TTIN")
+            else
+              logger.important("Server is not running.", "Unicorn")
+            end
+          end
+
+          desc 'Remove amount of workers'
+          task :remove_worker, :roles => :app, :except => {:no_release => true} do
+            pid = unicorn_get_pid
+            unless pid.nil?
+              logger.important("Removing worker...", "Unicorn")
+              unicorn_send_signal(pid, "TTOU")
+            else
+              logger.important("Server is not running.", "Unicorn")
+            end
+          end
         end
 
         after "deploy:restart", "unicorn:reload"
