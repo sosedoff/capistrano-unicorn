@@ -10,7 +10,7 @@ module CapistranoUnicorn
         def remote_file_exists?(full_path)
           'true' ==  capture("if [ -e #{full_path} ]; then echo 'true'; fi").strip
         end
-        
+
         # Check if process is running
         #
         def remote_process_exists?(pid_file)
@@ -46,7 +46,7 @@ module CapistranoUnicorn
           desc 'Start Unicorn master process'
           task :start, :roles => :app, :except => {:no_release => true} do
             if remote_file_exists?(unicorn_pid)
-              if process_exists?(unicorn_pid)
+              if remote_process_exists?(unicorn_pid)
                 logger.important("Unicorn is already running!", "Unicorn")
                 next
               else
@@ -60,7 +60,7 @@ module CapistranoUnicorn
             else
               config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
             end
-            
+
             if remote_file_exists?(config_path)
               logger.important("Starting...", "Unicorn")
               run "cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c #{config_path} -E #{app_env} -D"
