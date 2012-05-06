@@ -31,13 +31,14 @@ module CapistranoUnicorn
           run "#{try_sudo} kill -s #{signal} #{pid}"
         end
 
-        #
         # Set unicorn vars
         #
-        _cset(:unicorn_pid, "#{fetch(:current_path)}/tmp/pids/unicorn.pid")
-        _cset(:app_env,     (fetch(:rails_env) rescue 'production'))
-        _cset(:unicorn_env, (fetch(:app_env)))
-        _cset(:unicorn_bin, "unicorn")
+        before [ 'unicorn:start', 'unicorn:stop', 'unicorn:graceful_stop', 'unicorn:reload' ] do
+          _cset(:unicorn_pid, "#{fetch(:current_path)}/tmp/pids/unicorn.pid")
+          _cset(:app_env, (fetch(:rails_env) rescue 'production'))
+          _cset(:unicorn_env, (fetch(:app_env)))
+          _cset(:unicorn_bin, "unicorn")
+        end
 
         #
         # Unicorn rake tasks
