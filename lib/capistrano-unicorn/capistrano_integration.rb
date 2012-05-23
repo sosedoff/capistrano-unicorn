@@ -87,7 +87,8 @@ module CapistranoUnicorn
           task :reload, :roles => :app, :except => {:no_release => true} do
             if remote_file_exists?(unicorn_pid)
               logger.important("Stopping...", "Unicorn")
-              run "#{try_sudo} kill -s USR2 `cat #{unicorn_pid}`"
+              signal = variables[:unicorn_reload_via_sighup] ? 'HUP' : 'USR2'
+              run "#{try_sudo} kill -s #{signal} `cat #{unicorn_pid}`"
             else
               logger.important("No PIDs found. Starting Unicorn server...", "Unicorn")
               config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
