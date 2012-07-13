@@ -108,9 +108,9 @@ module CapistranoUnicorn
               logger.important("Restarting...", "Unicorn")
               unicorn_send_signal(pid, 'USR2')
               newpid = unicorn_get_pid
-              unless newpid.nil?
+              oldpid = unicorn_get_oldbin_pid
+              unless oldpid.nil?
                 logger.important("Quiting old master...", "Unicorn")
-                oldpid = unicorn_get_oldbin_pid
                 unicorn_send_signal(oldpid, 'QUIT')
               end
             else
