@@ -14,7 +14,7 @@ Add the gem to your ```Gemfile```:
 
 ```ruby
 group :development do
-  gem 'capistrano-unicorn'
+  gem 'capistrano-unicorn', :require => false
 end
 ```
 
