@@ -19,10 +19,17 @@ module CapistranoUnicorn
 
         # Get unicorn master process PID
         #
-        def unicorn_get_pid
-          if remote_file_exists?(unicorn_pid) && remote_process_exists?(unicorn_pid)
-            capture("cat #{unicorn_pid}")
+        def unicorn_get_pid(pid_file=unicorn_pid)
+          if remote_file_exists?(pid_file) && remote_process_exists?(pid_file)
+            capture("cat #{pid_file}")
           end
+        end
+
+        # Get unicorn master (old) process PID
+        #
+        def unicorn_get_oldbin_pid
+          oldbin_pid_file = "#{unicorn_pid}.oldbin"
+          unicorn_get_pid(oldbin_pid_file)
         end
 
         # Send a signal to unicorn master process
@@ -100,6 +107,12 @@ module CapistranoUnicorn
             unless pid.nil?
               logger.important("Restarting...", "Unicorn")
               unicorn_send_signal(pid, 'USR2')
+              newpid = unicorn_get_pid
+              oldpid = unicorn_get_oldbin_pid
+              unless oldpid.nil?
+                logger.important("Quiting old master...", "Unicorn")
+                unicorn_send_signal(oldpid, 'QUIT')
+              end
             else
               unicorn.start
             end
