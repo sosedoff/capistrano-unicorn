@@ -28,7 +28,8 @@ require 'capistrano-unicorn'
 
 This should add a unicorn server start task after ```deploy:restart```.
 
-Unicorn configuration file should be placed under ```config/unicorn/YOUR_ENV.rb```
+Unicorn configuration file should be placed under ```config/unicorn/YOUR_ENV.rb``` -
+see [```examples/rails3.rb```](examples/rails3.rb) for an example.
 
 To test if it works type:
 
