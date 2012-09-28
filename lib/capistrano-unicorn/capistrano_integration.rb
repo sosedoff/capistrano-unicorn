@@ -5,37 +5,95 @@ module CapistranoUnicorn
   class CapistranoIntegration
     def self.load_into(capistrano_config)
       capistrano_config.load do
-        # Check if remote file exists
-        #
-        def remote_file_exists?(full_path)
-          'true' ==  capture("if [ -e #{full_path} ]; then echo 'true'; fi").strip
-        end
-
-        # Check if process is running
+        # Check if a remote process exists using its pid file
         #
         def remote_process_exists?(pid_file)
-          capture("ps -p $(cat #{pid_file}) ; true").strip.split("\n").size == 2
+          "[ -e #{pid_file} ] && kill -0 `cat #{pid_file}` > /dev/null 2>&1"
         end
 
-        # Get unicorn master process PID
+        # Stale Unicorn process pid file
         #
-        def unicorn_get_pid(pid_file=unicorn_pid)
-          if remote_file_exists?(pid_file) && remote_process_exists?(pid_file)
-            capture("cat #{pid_file}")
-          end
+        def old_unicorn_pid
+          "#{unicorn_pid}.oldbin"
+        end
+
+        # Command to check if Unicorn is running
+        #
+        def unicorn_is_running?
+          remote_process_exists?(unicorn_pid)
+        end
+
+        # Command to check if stale Unicorn is running
+        #
+        def old_unicorn_is_running?
+          remote_process_exists?(old_unicorn_pid)
+        end
+
+        # Get unicorn master process PID (using the shell)
+        #
+        def get_unicorn_pid(pid_file=unicorn_pid)
+          "`cat #{pid_file}`"
         end
 
         # Get unicorn master (old) process PID
         #
-        def unicorn_get_oldbin_pid
-          oldbin_pid_file = "#{unicorn_pid}.oldbin"
-          unicorn_get_pid(oldbin_pid_file)
+        def get_old_unicorn_pid
+          get_unicorn_pid(old_unicorn_pid)
         end
 
-        # Send a signal to unicorn master process
+        # Send a signal to a unicorn master processes
         #
-        def unicorn_send_signal(pid, signal)
-          run "#{try_sudo} kill -s #{signal} #{pid}"
+        def unicorn_send_signal(signal, pid=get_unicorn_pid)
+          "#{try_sudo} kill -s #{signal} #{pid}"
+        end
+
+        # Kill Unicorns in multiple ways O_O
+        #
+        def kill_unicorn(signal)
+          incantation = <<-MAGIC
+            if #{unicorn_is_running?}; then
+              echo "Stopping Unicorn...";
+              #{unicorn_send_signal(signal)};
+            else
+              echo "Unicorn is not running.";
+            fi;
+          MAGIC
+
+          incantation
+        end
+
+        # Start the Unicorn server
+        #
+        def start_unicorn
+          primary_config_path = "#{current_path}/config/unicorn.rb"
+          secondary_config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
+
+          pot_o_gold = <<-RAINBOW
+            if [ -e #{primary_config_path} ]; then
+              UNICORN_CONFIG_PATH=#{primary_config_path};
+            else
+              if [ -e #{secondary_config_path} ]; then
+                UNICORN_CONFIG_PATH=#{secondary_config_path};
+              else
+                echo "Config file for \"#{unicorn_env}\" environment was not found at either \"#{primary_config_path}\" or \"#{secondary_config_path}\"";
+                exit 1;
+              fi;
+            fi;
+
+            if [ -e #{unicorn_pid} ]; then
+              if kill -0 `cat #{unicorn_pid}` > /dev/null 2>&1; then
+                echo "Unicorn is already running!";
+                exit 0;
+              fi;
+
+              rm #{unicorn_pid};
+            fi;
+
+            echo "Starting Unicorn...";
+            cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
+          RAINBOW
+
+          pot_o_gold
         end
 
         # Set unicorn vars
@@ -50,105 +108,76 @@ module CapistranoUnicorn
         end
 
         #
-        # Unicorn rake tasks
+        # Unicorn cap tasks
         #
         namespace :unicorn do
           desc 'Start Unicorn master process'
           task :start, :roles => :app, :except => {:no_release => true} do
-            if remote_file_exists?(unicorn_pid)
-              if remote_process_exists?(unicorn_pid)
-                logger.important("Unicorn is already running!", "Unicorn")
-                next
-              else
-                run "rm #{unicorn_pid}"
-              end
-            end
-
-            primary_config_path = "#{current_path}/config/unicorn.rb"
-            if remote_file_exists?(primary_config_path)
-              config_path = primary_config_path
-            else
-              config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
-            end
-
-            if remote_file_exists?(config_path)
-              logger.important("Starting...", "Unicorn")
-              run "cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c #{config_path} -E #{app_env} -D"
-            else
-              logger.important("Config file for \"#{unicorn_env}\" environment was not found at \"#{config_path}\"", "Unicorn")
-            end
+            run start_unicorn
           end
 
           desc 'Stop Unicorn'
           task :stop, :roles => :app, :except => {:no_release => true} do
-            pid = unicorn_get_pid
-            unless pid.nil?
-              logger.important("Stopping...", "Unicorn")
-              unicorn_send_signal(pid, "QUIT")
-            else
-              logger.important("Unicorn is not running.", "Unicorn")
-            end
+            run kill_unicorn('QUIT')
           end
 
           desc 'Immediately shutdown Unicorn'
           task :shutdown, :roles => :app, :except => {:no_release => true} do
-            pid = unicorn_get_pid
-            unless pid.nil?
-              logger.important("Stopping...", "Unicorn")
-              unicorn_send_signal(pid, "TERM")
-            else
-              logger.important("Unicorn is not running.", "Unicorn")
-            end
+            run kill_unicorn('TERM')
           end
 
           desc 'Restart Unicorn'
           task :restart, :roles => :app, :except => {:no_release => true} do
-            pid = unicorn_get_pid
-            unless pid.nil?
-              logger.important("Restarting...", "Unicorn")
-              unicorn_send_signal(pid, 'USR2')
-              newpid = unicorn_get_pid
-              oldpid = unicorn_get_oldbin_pid
-              unless oldpid.nil?
-                logger.important("Quiting old master...", "Unicorn")
-                unicorn_send_signal(oldpid, 'QUIT')
-              end
-            else
-              unicorn.start
-            end
+            run <<-IMMORTALITY
+              if #{unicorn_is_running?}; then
+                echo "Restarting Unicorn...";
+                #{unicorn_send_signal('USR2')};
+              else
+                #{start_unicorn}
+              fi;
+
+              sleep 2; # in order to wait for the (old) pidfile to show up
+
+              if #{old_unicorn_is_running?}; then
+                #{unicorn_send_signal('QUIT', get_old_unicorn_pid)};
+              fi;
+            IMMORTALITY
           end
 
           desc 'Reload Unicorn'
           task :reload, :roles => :app, :except => {:no_release => true} do
-            pid = unicorn_get_pid
-            unless pid.nil?
-              logger.important("Reloading...", "Unicorn")
-              unicorn_send_signal(pid, 'HUP')
-            else
-              unicorn.start
-            end
+            run <<-LEPRECHAUN
+              if #{unicorn_is_running?}; then
+                echo "Reloading Unicorn...";
+                #{unicorn_send_signal('HUP')};
+              else
+                #{start_unicorn}
+              fi;
+            LEPRECHAUN
           end
 
           desc 'Add a new worker'
           task :add_worker, :roles => :app, :except => {:no_release => true} do
-            pid = unicorn_get_pid
-            unless pid.nil?
-              logger.important("Adding a new worker...", "Unicorn")
-              unicorn_send_signal(pid, "TTIN")
-            else
-              logger.important("Server is not running.", "Unicorn")
-            end
+            run <<-DRUID
+              if #{unicorn_is_running?}; then
+                echo "Adding a new Unicorn worker...";
+                #{unicorn_send_signal('TTIN')};
+              else
+                echo "Unicorn is not running.";
+              fi;
+            DRUID
           end
 
           desc 'Remove amount of workers'
           task :remove_worker, :roles => :app, :except => {:no_release => true} do
-            pid = unicorn_get_pid
-            unless pid.nil?
-              logger.important("Removing worker...", "Unicorn")
-              unicorn_send_signal(pid, "TTOU")
-            else
-              logger.important("Server is not running.", "Unicorn")
-            end
+            run <<-CENTAUR
+              if #{unicorn_is_running?}; then
+                echo "Removing a Unicorn worker...";
+                #{unicorn_send_signal('TTOU')};
+              else
+                echo "Unicorn is not running.";
+              fi;
+            CENTAUR
           end
         end
 
