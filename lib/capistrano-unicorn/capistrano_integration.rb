@@ -180,8 +180,6 @@ module CapistranoUnicorn
             CENTAUR
           end
         end
-
-        after "deploy:restart", "unicorn:restart"
       end
     end
   end
