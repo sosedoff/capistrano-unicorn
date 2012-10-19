@@ -90,7 +90,7 @@ module CapistranoUnicorn
             fi;
 
             echo "Starting Unicorn...";
-            cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
+            cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile #{bundle_cmd} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
           RAINBOW
 
           pot_o_gold
