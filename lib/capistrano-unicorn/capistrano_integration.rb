@@ -90,7 +90,7 @@ module CapistranoUnicorn
             fi;
 
             echo "Starting Unicorn...";
-            cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile #{fetch(:bundle_cmd)} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
+            cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
           RAINBOW
 
           pot_o_gold
@@ -105,6 +105,7 @@ module CapistranoUnicorn
           _cset(:app_env) { (fetch(:rails_env) rescue 'production') }
           _cset(:unicorn_env) { fetch(:app_env) }
           _cset(:unicorn_bin, "unicorn")
+          _cset(:unicorn_bundle) { fetch(:bundle_cmd) rescue 'bundle' }
         end
 
         #
