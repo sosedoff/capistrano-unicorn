@@ -3,8 +3,26 @@ require 'capistrano/version'
 
 module CapistranoUnicorn
   class CapistranoIntegration
+    TASKS = [
+      'unicorn:start',
+      'unicorn:stop',
+      'unicorn:restart',
+      'unicorn:reload', 
+      'unicorn:shutdown',
+      'unicorn:add_worker',
+      'unicorn:remove_worker'
+    ]
+
     def self.load_into(capistrano_config)
       capistrano_config.load do
+        before(CapistranoIntegration::TASKS) do
+          _cset(:app_env)        { (fetch(:rails_env) rescue 'production') }
+          _cset(:unicorn_pid)    { "#{fetch(:current_path)}/tmp/pids/unicorn.pid" }
+          _cset(:unicorn_env)    { fetch(:app_env) }
+          _cset(:unicorn_bin)    { "unicorn" }
+          _cset(:unicorn_bundle) { fetch(:bundle_cmd) rescue 'bundle' }
+        end
+
         # Check if a remote process exists using its pid file
         #
         def remote_process_exists?(pid_file)
@@ -50,16 +68,16 @@ module CapistranoUnicorn
         # Kill Unicorns in multiple ways O_O
         #
         def kill_unicorn(signal)
-          incantation = <<-MAGIC
+          script = <<-END
             if #{unicorn_is_running?}; then
               echo "Stopping Unicorn...";
               #{unicorn_send_signal(signal)};
             else
               echo "Unicorn is not running.";
             fi;
-          MAGIC
+          END
 
-          incantation
+          script
         end
 
         # Start the Unicorn server
@@ -68,7 +86,7 @@ module CapistranoUnicorn
           primary_config_path = "#{current_path}/config/unicorn.rb"
           secondary_config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
 
-          pot_o_gold = <<-RAINBOW
+          script = <<-END
             if [ -e #{primary_config_path} ]; then
               UNICORN_CONFIG_PATH=#{primary_config_path};
             else
@@ -91,21 +109,9 @@ module CapistranoUnicorn
 
             echo "Starting Unicorn...";
             cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
-          RAINBOW
+          END
 
-          pot_o_gold
-        end
-
-        # Set unicorn vars
-        #
-        before [ 'unicorn:start', 'unicorn:stop', 'unicorn:shutdown', 
-                 'unicorn:restart', 'unicorn:reload', 'unicorn:add_worker',  
-                 'unicorn:remove_worker' ] do
-          _cset(:unicorn_pid) { "#{fetch(:current_path)}/tmp/pids/unicorn.pid" }
-          _cset(:app_env) { (fetch(:rails_env) rescue 'production') }
-          _cset(:unicorn_env) { fetch(:app_env) }
-          _cset(:unicorn_bin, "unicorn")
-          _cset(:unicorn_bundle) { fetch(:bundle_cmd) rescue 'bundle' }
+          script
         end
 
         #
@@ -129,7 +135,7 @@ module CapistranoUnicorn
 
           desc 'Restart Unicorn'
           task :restart, :roles => :app, :except => {:no_release => true} do
-            run <<-IMMORTALITY
+            run <<-END
               if #{unicorn_is_running?}; then
                 echo "Restarting Unicorn...";
                 #{unicorn_send_signal('USR2')};
@@ -142,43 +148,43 @@ module CapistranoUnicorn
               if #{old_unicorn_is_running?}; then
                 #{unicorn_send_signal('QUIT', get_old_unicorn_pid)};
               fi;
-            IMMORTALITY
+            END
           end
 
           desc 'Reload Unicorn'
           task :reload, :roles => :app, :except => {:no_release => true} do
-            run <<-LEPRECHAUN
+            run <<-END
               if #{unicorn_is_running?}; then
                 echo "Reloading Unicorn...";
                 #{unicorn_send_signal('HUP')};
               else
                 #{start_unicorn}
               fi;
-            LEPRECHAUN
+            END
           end
 
           desc 'Add a new worker'
           task :add_worker, :roles => :app, :except => {:no_release => true} do
-            run <<-DRUID
+            run <<-END
               if #{unicorn_is_running?}; then
                 echo "Adding a new Unicorn worker...";
                 #{unicorn_send_signal('TTIN')};
               else
                 echo "Unicorn is not running.";
               fi;
-            DRUID
+            END
           end
 
           desc 'Remove amount of workers'
           task :remove_worker, :roles => :app, :except => {:no_release => true} do
-            run <<-CENTAUR
+            run <<-END
               if #{unicorn_is_running?}; then
                 echo "Removing a Unicorn worker...";
                 #{unicorn_send_signal('TTOU')};
               else
                 echo "Unicorn is not running.";
               fi;
-            CENTAUR
+            END
           end
         end
       end
