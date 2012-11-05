@@ -4,13 +4,17 @@ Capistrano plugin that integrates Unicorn tasks into capistrano deployment scrip
 
 ## Installation
 
+Install library from rubygems:
+
 ```
 gem install capistrano-unicorn
 ```
 
 ## Usage
 
-Add the gem to your ```Gemfile```:
+### Setup
+
+Add the library to your `Gemfile`:
 
 ```ruby
 group :development do
@@ -18,20 +22,32 @@ group :development do
 end
 ```
 
-Add unicorn plugin into your deploy.rb file.
-
-**NOTE:** Should be placed after all hooks
+And load it into your deployment script `config/deploy.rb`:
 
 ```ruby
 require 'capistrano-unicorn'
 ```
 
-This should add a unicorn server start task after ```deploy:restart```.
+Add unicorn restart task hook:
 
-Unicorn configuration file should be placed under ```config/unicorn/YOUR_ENV.rb``` -
-see [```examples/rails3.rb```](https://github.com/sosedoff/capistrano-unicorn/blob/master/examples/rails3.rb) for an example.
+```ruby
+after 'deploy:restart', 'unicorn:restart' # app IS NOT preloaded
+after 'deploy:restart', 'unicorn:reload'  # app preloaded
+```
 
-To test if it works type:
+Create a new configuration file `config/unicorn/unicorn.rb` or `config/unicorn/STAGE.rb`, where stage is your deployment environment.
+
+Example config - [examples/rails3.rb](https://github.com/sosedoff/capistrano-unicorn/blob/master/examples/rails3.rb). Please refer to unicorn documentation for more examples and configuration options.
+
+### Test
+
+First, make sure you're running the latest release:
+
+```
+cap deploy
+```
+
+Then you can test each individual task:
 
 ```
 cap unicorn:start
@@ -39,15 +55,16 @@ cap unicorn:stop
 cap unicorn:reload
 ```
 
-**NOTE:** This plugin uses bundler.
+## Configuration
 
-## Configuration options
+You can modify any of the following options in your `deploy.rb` config.
 
-- ```unicorn_env``` - Set unicorn environment. Default to ```rails_env``` variable.
-- ```unicorn_pid``` - Set unicorn PID file path. Default to ```current_path/tmp/pids/unicorn.pid```
-- ```unicorn_bin``` - Set unicorn executable file. Default to ```unicorn```.
+- `unicorn_env` - Set unicorn environment. Default to `rails_env` variable.
+- `unicorn_pid` - Set unicorn PID file path. Default to `current_path/tmp/pids/unicorn.pid`
+- `unicorn_bin` - Set unicorn executable file. Default to `unicorn`.
+- `unicorn_bundle` - Set bundler command for unicorn. Default to `bundle`.
 
-## Unicorn Tasks
+## Available Tasks
 
 To get a list of all capistrano tasks, run `cap -T`:
 
@@ -63,10 +80,4 @@ cap unicorn:stop                      # Stop Unicorn
 
 ## License
 
-Copyright (c) 2011-2012 Dan Sosedoff.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+See LICENSE file for details.
