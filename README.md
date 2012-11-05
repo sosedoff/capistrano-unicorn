@@ -47,6 +47,20 @@ cap unicorn:reload
 - ```unicorn_pid``` - Set unicorn PID file path. Default to ```current_path/tmp/pids/unicorn.pid```
 - ```unicorn_bin``` - Set unicorn executable file. Default to ```unicorn```.
 
+## Unicorn Tasks
+
+To get a list of all capistrano tasks, run `cap -T`:
+
+```
+cap unicorn:add_worker                # Add a new worker
+cap unicorn:remove_worker             # Remove amount of workers
+cap unicorn:reload                    # Reload Unicorn
+cap unicorn:restart                   # Restart Unicorn
+cap unicorn:shutdown                  # Immediately shutdown Unicorn
+cap unicorn:start                     # Start Unicorn master process
+cap unicorn:stop                      # Stop Unicorn
+```
+
 ## License
 
 Copyright (c) 2011-2012 Dan Sosedoff.
