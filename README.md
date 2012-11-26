@@ -31,8 +31,8 @@ require 'capistrano-unicorn'
 Add unicorn restart task hook:
 
 ```ruby
-after 'deploy:restart', 'unicorn:restart' # app IS NOT preloaded
-after 'deploy:restart', 'unicorn:reload'  # app preloaded
+after 'deploy:restart', 'unicorn:reload' # app IS NOT preloaded
+after 'deploy:restart', 'unicorn:restart'  # app preloaded
 ```
 
 Create a new configuration file `config/unicorn/unicorn.rb` or `config/unicorn/STAGE.rb`, where stage is your deployment environment.
