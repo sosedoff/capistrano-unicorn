@@ -64,6 +64,8 @@ You can modify any of the following options in your `deploy.rb` config.
 - `unicorn_bin` - Set unicorn executable file. Default to `unicorn`.
 - `unicorn_bundle` - Set bundler command for unicorn. Default to `bundle`.
 
+If you are using capistrano multistage, please refer to [Using capistrano unicorn with multistage environment](https://github.com/sosedoff/capistrano-unicorn/wiki/Using-capistrano-unicorn-with-multistage-environment).
+
 ## Available Tasks
 
 To get a list of all capistrano tasks, run `cap -T`:
