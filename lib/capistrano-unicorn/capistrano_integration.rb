@@ -16,11 +16,12 @@ module CapistranoUnicorn
     def self.load_into(capistrano_config)
       capistrano_config.load do
         before(CapistranoIntegration::TASKS) do
-          _cset(:app_env)        { (fetch(:rails_env) rescue 'production') }
-          _cset(:unicorn_pid)    { "#{fetch(:current_path)}/tmp/pids/unicorn.pid" }
-          _cset(:unicorn_env)    { fetch(:app_env) }
-          _cset(:unicorn_bin)    { "unicorn" }
-          _cset(:unicorn_bundle) { fetch(:bundle_cmd) rescue 'bundle' }
+          _cset(:app_env)                    { (fetch(:rails_env) rescue 'production') }
+          _cset(:unicorn_pid)                { "#{fetch(:current_path)}/tmp/pids/unicorn.pid" }
+          _cset(:unicorn_env)                { fetch(:app_env) }
+          _cset(:unicorn_bin)                { "unicorn" }
+          _cset(:unicorn_bundle)             { fetch(:bundle_cmd) rescue 'bundle' }
+          _cset(:unicorn_restart_sleep_time) { 2 }
         end
 
         # Check if a remote process exists using its pid file
@@ -143,7 +144,7 @@ module CapistranoUnicorn
                 #{start_unicorn}
               fi;
 
-              sleep 2; # in order to wait for the (old) pidfile to show up
+              sleep #{unicorn_restart_sleep_time}; # in order to wait for the (old) pidfile to show up
 
               if #{old_unicorn_is_running?}; then
                 #{unicorn_send_signal('QUIT', get_old_unicorn_pid)};
