@@ -70,6 +70,7 @@ module CapistranoUnicorn
         #
         def kill_unicorn(signal)
           script = <<-END
+            set -x;
             if #{unicorn_is_running?}; then
               echo "Stopping Unicorn...";
               #{unicorn_send_signal(signal)};
@@ -88,6 +89,7 @@ module CapistranoUnicorn
           secondary_config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
 
           script = <<-END
+            set -x;
             if [ -e #{primary_config_path} ]; then
               UNICORN_CONFIG_PATH=#{primary_config_path};
             else
@@ -137,6 +139,7 @@ module CapistranoUnicorn
           desc 'Restart Unicorn'
           task :restart, :roles => :app, :except => {:no_release => true} do
             run <<-END
+              set -x;
               if #{unicorn_is_running?}; then
                 echo "Restarting Unicorn...";
                 #{unicorn_send_signal('USR2')};
@@ -155,6 +158,7 @@ module CapistranoUnicorn
           desc 'Reload Unicorn'
           task :reload, :roles => :app, :except => {:no_release => true} do
             run <<-END
+              set -x;
               if #{unicorn_is_running?}; then
                 echo "Reloading Unicorn...";
                 #{unicorn_send_signal('HUP')};
@@ -167,6 +171,7 @@ module CapistranoUnicorn
           desc 'Add a new worker'
           task :add_worker, :roles => :app, :except => {:no_release => true} do
             run <<-END
+              set -x;
               if #{unicorn_is_running?}; then
                 echo "Adding a new Unicorn worker...";
                 #{unicorn_send_signal('TTIN')};
@@ -179,6 +184,7 @@ module CapistranoUnicorn
           desc 'Remove amount of workers'
           task :remove_worker, :roles => :app, :except => {:no_release => true} do
             run <<-END
+              set -x;
               if #{unicorn_is_running?}; then
                 echo "Removing a Unicorn worker...";
                 #{unicorn_send_signal('TTOU')};
