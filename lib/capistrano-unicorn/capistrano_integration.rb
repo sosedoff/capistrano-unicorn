@@ -16,11 +16,11 @@ module CapistranoUnicorn
     def self.load_into(capistrano_config)
       capistrano_config.load do
         before(CapistranoIntegration::TASKS) do
-          _cset(:app_env)                    { (fetch(:rails_env) rescue 'production') }
-          _cset(:unicorn_pid)                { "#{fetch(:current_path)}/tmp/pids/unicorn.pid" }
+          _cset(:app_env)                    { fetch(:rails_env, 'production') }
+          _cset(:unicorn_pid)                { "#{current_path}/tmp/pids/unicorn.pid" }
           _cset(:unicorn_env)                { fetch(:app_env) }
           _cset(:unicorn_bin)                { "unicorn" }
-          _cset(:unicorn_bundle)             { fetch(:bundle_cmd) rescue 'bundle' }
+          _cset(:unicorn_bundle)             { fetch(:bundle_cmd, 'bundle') }
           _cset(:unicorn_restart_sleep_time) { 2 }
         end
 
