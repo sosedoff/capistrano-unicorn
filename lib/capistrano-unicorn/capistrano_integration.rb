@@ -22,12 +22,13 @@ module CapistranoUnicorn
           _cset(:unicorn_bin)                { "unicorn" }
           _cset(:unicorn_bundle)             { fetch(:bundle_cmd) rescue 'bundle' }
           _cset(:unicorn_restart_sleep_time) { 2 }
+          _cset(:unicorn_user)               { nil }
         end
 
         # Check if a remote process exists using its pid file
         #
         def remote_process_exists?(pid_file)
-          "[ -e #{pid_file} ] && kill -0 `cat #{pid_file}` > /dev/null 2>&1"
+          "[ -e #{pid_file} ] && #{try_unicorn_user} kill -0 `cat #{pid_file}` > /dev/null 2>&1"
         end
 
         # Stale Unicorn process pid file
@@ -63,7 +64,14 @@ module CapistranoUnicorn
         # Send a signal to a unicorn master processes
         #
         def unicorn_send_signal(signal, pid=get_unicorn_pid)
-          "#{try_sudo} kill -s #{signal} #{pid}"
+          "#{try_unicorn_user} kill -s #{signal} #{pid}"
+        end
+
+        # Run a command as the :unicorn_user user if :unicorn_user is a string.
+        # Otherwise run as default (:user) user.
+        #
+        def try_unicorn_user
+          "#{sudo :as => unicorn_user.to_s}" if unicorn_user.kind_of?(String)
         end
 
         # Kill Unicorns in multiple ways O_O
@@ -102,16 +110,16 @@ module CapistranoUnicorn
             fi;
 
             if [ -e #{unicorn_pid} ]; then
-              if kill -0 `cat #{unicorn_pid}` > /dev/null 2>&1; then
+              if #{try_unicorn_user} kill -0 `cat #{unicorn_pid}` > /dev/null 2>&1; then
                 echo "Unicorn is already running!";
                 exit 0;
               fi;
 
-              rm #{unicorn_pid};
+              #{try_unicorn_user} rm #{unicorn_pid};
             fi;
 
             echo "Starting Unicorn...";
-            cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
+            cd #{current_path} && #{try_unicorn_user} BUNDLE_GEMFILE=#{current_path}/Gemfile #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
           END
 
           script
