@@ -117,30 +117,30 @@ module CapistranoUnicorn
           script
         end
 
-        def roles
-          fetch(:unicorn_role, :web)
+        def task_roles
+          fetch(:unicorn_role, :app)
         end
         #
         # Unicorn cap tasks
         #
         namespace :unicorn do
           desc 'Start Unicorn master process'
-          task :start, :roles => lambda { roles }, :except => {:no_release => true} do
+          task :start, :roles => task_roles, :except => {:no_release => true} do
             run start_unicorn
           end
 
           desc 'Stop Unicorn'
-          task :stop, :roles => lambda { roles }, :except => {:no_release => true} do
+          task :stop, :roles => task_roles, :except => {:no_release => true} do
             run kill_unicorn('QUIT')
           end
 
           desc 'Immediately shutdown Unicorn'
-          task :shutdown, :roles => lambda { roles }, :except => {:no_release => true} do
+          task :shutdown, :roles => task_roles, :except => {:no_release => true} do
             run kill_unicorn('TERM')
           end
 
           desc 'Restart Unicorn'
-          task :restart, :roles => lambda { roles }, :except => {:no_release => true} do
+          task :restart, :roles => task_roles, :except => {:no_release => true} do
             run <<-END
               set -x;
               if #{unicorn_is_running?}; then
@@ -159,7 +159,7 @@ module CapistranoUnicorn
           end
 
           desc 'Reload Unicorn'
-          task :reload, :roles => lambda { roles }, :except => {:no_release => true} do
+          task :reload, :roles => task_roles, :except => {:no_release => true} do
             run <<-END
               set -x;
               if #{unicorn_is_running?}; then
@@ -172,7 +172,7 @@ module CapistranoUnicorn
           end
 
           desc 'Add a new worker'
-          task :add_worker, :roles => lambda { roles }, :except => {:no_release => true} do
+          task :add_worker, :roles => task_roles, :except => {:no_release => true} do
             run <<-END
               set -x;
               if #{unicorn_is_running?}; then
@@ -185,7 +185,7 @@ module CapistranoUnicorn
           end
 
           desc 'Remove amount of workers'
-          task :remove_worker, :roles => lambda { roles }, :except => {:no_release => true} do
+          task :remove_worker, :roles => task_roles, :except => {:no_release => true} do
             run <<-END
               set -x;
               if #{unicorn_is_running?}; then
