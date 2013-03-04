@@ -64,6 +64,7 @@ You can modify any of the following options in your `deploy.rb` config.
 - `unicorn_bin` - Set unicorn executable file. Default to `unicorn`.
 - `unicorn_bundle` - Set bundler command for unicorn. Default to `bundle`.
 - `unicorn_user` - Launch unicorn master as the specified user. Default to `user` variable.
+- `unicorn_role` - Define which roles to perform unicorn recipes on. Defaults to :app
 
 If you are using capistrano multistage, please refer to [Using capistrano unicorn with multistage environment](https://github.com/sosedoff/capistrano-unicorn/wiki/Using-capistrano-unicorn-with-multistage-environment).
 
