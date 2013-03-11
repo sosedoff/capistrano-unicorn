@@ -7,7 +7,8 @@ module CapistranoUnicorn
       'unicorn:start',
       'unicorn:stop',
       'unicorn:restart',
-      'unicorn:reload', 
+      'unicorn:duplicate',
+      'unicorn:reload',
       'unicorn:shutdown',
       'unicorn:add_worker',
       'unicorn:remove_worker'
@@ -125,6 +126,20 @@ module CapistranoUnicorn
           script
         end
 
+        def duplicate_unicorn
+          script = <<-END
+            set -x;
+            if #{unicorn_is_running?}; then
+              echo "Duplicating Unicorn...";
+              #{unicorn_send_signal('USR2')};
+            else
+              #{start_unicorn}
+            fi;
+          END
+
+          script
+        end
+
         #
         # Unicorn cap tasks
         #
@@ -147,13 +162,7 @@ module CapistranoUnicorn
           desc 'Restart Unicorn'
           task :restart, :roles => :app, :except => {:no_release => true} do
             run <<-END
-              set -x;
-              if #{unicorn_is_running?}; then
-                echo "Restarting Unicorn...";
-                #{unicorn_send_signal('USR2')};
-              else
-                #{start_unicorn}
-              fi;
+              #{duplicate_unicorn}
 
               sleep #{unicorn_restart_sleep_time}; # in order to wait for the (old) pidfile to show up
 
@@ -161,6 +170,11 @@ module CapistranoUnicorn
                 #{unicorn_send_signal('QUIT', get_old_unicorn_pid)};
               fi;
             END
+          end
+
+          desc 'Duplicate Unicorn'
+          task :duplicate, :roles => :app, :except => {:no_release => true} do
+            run duplicate_unicorn()
           end
 
           desc 'Reload Unicorn'
