@@ -176,7 +176,7 @@ module CapistranoUnicorn
           end
 
           desc 'Duplicate Unicorn'
-          task :duplicate, :roles => :app, :except => {:no_release => true} do
+          task :duplicate, :roles => task_roles, :except => {:no_release => true} do
             run duplicate_unicorn()
           end
 
@@ -186,7 +186,7 @@ module CapistranoUnicorn
               set -x;
               if #{unicorn_is_running?}; then
                 echo "Reloading Unicorn...";
-                #{unicorn_send_signal('HUP')};
+                #{unicorn_send_signal('USR2')};
               else
                 #{start_unicorn}
               fi;
