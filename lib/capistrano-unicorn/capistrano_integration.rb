@@ -21,6 +21,7 @@ module CapistranoUnicorn
           _cset(:unicorn_pid)                { "#{fetch(:current_path)}/tmp/pids/unicorn.pid" }
           _cset(:unicorn_env)                { fetch(:app_env) }
           _cset(:unicorn_bin)                { "unicorn" }
+          _cset(:unicorn_options)            { fetch(:unicorn_options) rescue '' }
           _cset(:unicorn_bundle)             { fetch(:bundle_cmd) rescue 'bundle' }
           _cset(:unicorn_restart_sleep_time) { 2 }
           _cset(:unicorn_user)               { nil }
@@ -120,7 +121,7 @@ module CapistranoUnicorn
             fi;
 
             echo "Starting Unicorn...";
-            cd #{current_path} && #{try_unicorn_user} BUNDLE_GEMFILE=#{current_path}/Gemfile #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
+            cd #{current_path} && #{try_unicorn_user} BUNDLE_GEMFILE=#{current_path}/Gemfile #{unicorn_bundle} exec #{unicorn_bin} #{unicorn_options} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
           END
 
           script
