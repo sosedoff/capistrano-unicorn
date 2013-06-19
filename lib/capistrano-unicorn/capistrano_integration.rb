@@ -143,27 +143,31 @@ module CapistranoUnicorn
           fetch(:unicorn_roles, :app)
         end
 
+        def unicorn_task_options
+          fetch(:unicorn_task_options, :except => {:no_release => true})
+        end
+
         #
         # Unicorn cap tasks
         #
         namespace :unicorn do
           desc 'Start Unicorn master process'
-          task :start, :roles => unicorn_roles, :except => {:no_release => true} do
+          task :start, {:roles => unicorn_roles}.merge(unicorn_task_options) do
             run start_unicorn
           end
 
           desc 'Stop Unicorn'
-          task :stop, :roles => unicorn_roles, :except => {:no_release => true} do
+          task :stop, {:roles => unicorn_roles}.merge(unicorn_task_options) do
             run kill_unicorn('QUIT')
           end
 
           desc 'Immediately shutdown Unicorn'
-          task :shutdown, :roles => unicorn_roles, :except => {:no_release => true} do
+          task :shutdown, {:roles => unicorn_roles}.merge(unicorn_task_options) do
             run kill_unicorn('TERM')
           end
 
           desc 'Restart Unicorn'
-          task :restart, :roles => unicorn_roles, :except => {:no_release => true} do
+          task :restart, {:roles => unicorn_roles}.merge(unicorn_task_options) do
             run <<-END
               #{duplicate_unicorn}
 
@@ -176,12 +180,12 @@ module CapistranoUnicorn
           end
 
           desc 'Duplicate Unicorn'
-          task :duplicate, :roles => unicorn_roles, :except => {:no_release => true} do
+          task :duplicate, {:roles => unicorn_roles}.merge(unicorn_task_options) do
             run duplicate_unicorn()
           end
 
           desc 'Reload Unicorn'
-          task :reload, :roles => unicorn_roles, :except => {:no_release => true} do
+          task :reload, {:roles => unicorn_roles}.merge(unicorn_task_options) do
             run <<-END
               if #{unicorn_is_running?}; then
                 echo "Reloading Unicorn...";
@@ -193,7 +197,7 @@ module CapistranoUnicorn
           end
 
           desc 'Add a new worker'
-          task :add_worker, :roles => unicorn_roles, :except => {:no_release => true} do
+          task :add_worker, {:roles => unicorn_roles}.merge(unicorn_task_options) do
             run <<-END
               if #{unicorn_is_running?}; then
                 echo "Adding a new Unicorn worker...";
@@ -205,7 +209,7 @@ module CapistranoUnicorn
           end
 
           desc 'Remove amount of workers'
-          task :remove_worker, :roles => unicorn_roles, :except => {:no_release => true} do
+          task :remove_worker, {:roles => unicorn_roles}.merge(unicorn_task_options) do
             run <<-END
               if #{unicorn_is_running?}; then
                 echo "Removing a Unicorn worker...";
