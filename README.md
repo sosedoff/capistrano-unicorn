@@ -64,6 +64,7 @@ You can modify any of the following options in your `deploy.rb` config.
 - `unicorn_bin`             - Set unicorn executable file. Default to `unicorn`.
 - `unicorn_bundle`          - Set bundler command for unicorn. Default to `bundle`.
 - `unicorn_user`            - Launch unicorn master as the specified user. Default to `user` variable.
+- `unicorn_roles`           - Define which roles to perform unicorn recpies on. Default to `:app`.
 - `unicorn_config_path`     - Set the directory where unicorn config files reside. Default to `current_path/config`.
 - `unicorn_config_filename` - Set the filename of the unicorn config file. Not used in multistage installations. Default to `unicorn.rb`.
 
