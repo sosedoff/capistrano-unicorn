@@ -11,7 +11,8 @@ module CapistranoUnicorn
       'unicorn:reload',
       'unicorn:shutdown',
       'unicorn:add_worker',
-      'unicorn:remove_worker'
+      'unicorn:remove_worker',
+      'unicorn:script'
     ]
 
     def self.load_into(capistrano_config)
@@ -26,6 +27,7 @@ module CapistranoUnicorn
           _cset(:unicorn_user)               { nil }
           _cset(:unicorn_config_path)        { "#{fetch(:current_path)}/config" }
           _cset(:unicorn_config_filename)    { "unicorn.rb" }
+          _cset(:unicorn_script_path)        { "#{fetch(:current_path)}/bin/unicorn.sh" }
         end
 
         # Check if a remote process exists using its pid file
@@ -214,6 +216,67 @@ module CapistranoUnicorn
                 echo "Unicorn is not running.";
               fi;
             END
+          end
+
+          desc 'Create a shell script of available actions'
+          task :script, :roles => unicorn_roles, :except => {:no_release => true} do
+            unicorn_script = "#!/bin/sh\n"
+            unicorn_script << <<-END
+            case "$1" in
+              start)
+                #{start_unicorn}
+              ;;
+              stop)
+                #{kill_unicorn('QUIT')}
+              ;;
+              shutdown)
+                #{kill_unicorn('TERM')}
+              ;;
+              restart)
+                #{duplicate_unicorn}
+
+                sleep #{unicorn_restart_sleep_time}; # in order to wait for the (old) pidfile to show up
+
+                if #{old_unicorn_is_running?}; then
+                  #{unicorn_send_signal('QUIT', get_old_unicorn_pid)};
+                fi;
+              ;;
+              duplicate)
+                #{duplicate_unicorn()}
+              ;;
+              reload)
+                if #{unicorn_is_running?}; then
+                  echo "Reloading Unicorn...";
+                  #{unicorn_send_signal('HUP')};
+                else
+                  #{start_unicorn}
+                fi;
+              ;;
+              add_worker)
+                if #{unicorn_is_running?}; then
+                  echo "Adding a new Unicorn worker...";
+                  #{unicorn_send_signal('TTIN')};
+                else
+                  echo "Unicorn is not running.";
+                fi;
+              ;;
+              remove_worker)
+                if #{unicorn_is_running?}; then
+                  echo "Removing a Unicorn worker...";
+                  #{unicorn_send_signal('TTOU')};
+                else
+                  echo "Unicorn is not running.";
+                fi;
+              ;;
+              *)
+                echo "Usage: $NAME {start|stop|restart|reload|shutdown|duplicate|add_worker|remove_worker}" >&2
+                exit 1
+              ;;
+            esac
+            END
+            run "mkdir -p #{File.dirname(unicorn_script_path)}"
+            put(unicorn_script, unicorn_script_path, :via => :scp)
+            run "chmod +x #{unicorn_script_path}"
           end
         end
       end
