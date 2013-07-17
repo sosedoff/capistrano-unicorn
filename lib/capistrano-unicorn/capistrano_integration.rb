@@ -11,7 +11,10 @@ module CapistranoUnicorn
       'unicorn:reload',
       'unicorn:shutdown',
       'unicorn:add_worker',
-      'unicorn:remove_worker'
+      'unicorn:remove_worker',
+      'unicorn:stop_old_master',
+      'unicorn:duplicate_stop_old_workers',
+      'unicorn:fallback'
     ]
 
     def self.load_into(capistrano_config)
@@ -143,6 +146,17 @@ module CapistranoUnicorn
           fetch(:unicorn_roles, :app)
         end
 
+        def kill_old_unicorn
+          <<-END
+            if #{old_unicorn_is_running?}; then
+              echo "Stopping old Unicorn...";
+              #{unicorn_send_signal('QUIT', get_old_unicorn_pid)};
+            else
+              echo "old Unicorn is not running.";
+            fi;
+          END
+        end
+
         #
         # Unicorn cap tasks
         #
@@ -169,11 +183,10 @@ module CapistranoUnicorn
 
               sleep #{unicorn_restart_sleep_time}; # in order to wait for the (old) pidfile to show up
 
-              if #{old_unicorn_is_running?}; then
-                #{unicorn_send_signal('QUIT', get_old_unicorn_pid)};
-              fi;
+              #{kill_old_unicorn}
             END
           end
+
 
           desc 'Duplicate Unicorn'
           task :duplicate, :roles => unicorn_roles, :except => {:no_release => true} do
@@ -215,6 +228,28 @@ module CapistranoUnicorn
               fi;
             END
           end
+
+          desc 'Kill old master process'
+          task :stop_old_master, :roles => unicorn_roles, :except => {:no_release => true} do
+            run kill_old_unicorn()
+          end
+
+          desc 'Duplicate unicorn and tell the old master to stop serving requests'
+          task :duplicate_stop_old_workers, :roles => unicorn_roles, :except => {:no_release => true} do
+            run <<-END
+              #{duplicate_unicorn}
+
+              sleep #{unicorn_restart_sleep_time};
+
+              #{unicorn_send_signal('WINCH', get_old_unicorn_pid)}
+            END
+          end
+
+          desc 'Fallback to old master'
+          task :fallback, :roles => unicorn_roles, :except => {:no_release => true} do
+            run unicorn_send_signal('HUP', get_old_unicorn_pid)
+          end
+
         end
       end
     end
