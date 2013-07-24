@@ -35,7 +35,7 @@ after 'deploy:restart', 'unicorn:reload' # app IS NOT preloaded
 after 'deploy:restart', 'unicorn:restart'  # app preloaded
 ```
 
-Create a new configuration file `config/unicorn/unicorn.rb` or `config/unicorn/STAGE.rb`, where stage is your deployment environment.
+Create a new configuration file `config/unicorn.rb` or `config/unicorn/STAGE.rb`, where stage is your deployment environment.
 
 Example config - [examples/rails3.rb](https://github.com/sosedoff/capistrano-unicorn/blob/master/examples/rails3.rb). Please refer to unicorn documentation for more examples and configuration options.
 
