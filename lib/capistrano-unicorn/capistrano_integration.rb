@@ -26,6 +26,7 @@ module CapistranoUnicorn
           _cset(:unicorn_user)               { nil }
           _cset(:unicorn_config_path)        { "#{fetch(:current_path)}/config" }
           _cset(:unicorn_config_filename)    { "unicorn.rb" }
+          _cset(:unicorn_relative_path)      { "/" }
         end
 
         # Check if a remote process exists using its pid file
@@ -98,6 +99,7 @@ module CapistranoUnicorn
           primary_config_path = "#{unicorn_config_path}/#{unicorn_config_filename}"
           secondary_config_path = "#{unicorn_config_path}/unicorn/#{unicorn_env}.rb"
 
+          option = "--path #{unicorn_relative_path}" if unicorn_bin == "unicorn_rails"
           script = <<-END
             if [ -e #{primary_config_path} ]; then
               UNICORN_CONFIG_PATH=#{primary_config_path};
@@ -118,9 +120,8 @@ module CapistranoUnicorn
 
               #{try_unicorn_user} rm #{unicorn_pid};
             fi;
-
             echo "Starting Unicorn...";
-            cd #{current_path} && #{try_unicorn_user} BUNDLE_GEMFILE=#{current_path}/Gemfile #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
+            cd #{current_path} && #{try_unicorn_user} BUNDLE_GEMFILE=#{current_path}/Gemfile #{unicorn_bundle} exec #{unicorn_bin} #{option} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
           END
 
           script
