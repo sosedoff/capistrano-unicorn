@@ -11,7 +11,9 @@ module CapistranoUnicorn
       'unicorn:reload',
       'unicorn:shutdown',
       'unicorn:add_worker',
-      'unicorn:remove_worker'
+      'unicorn:remove_worker',
+      'unicorn:setup',
+      'unicorn:link_socket_dir'
     ]
 
     def self.load_into(capistrano_config)
@@ -26,6 +28,7 @@ module CapistranoUnicorn
           _cset(:unicorn_user)               { nil }
           _cset(:unicorn_config_path)        { "#{fetch(:current_path)}/config" }
           _cset(:unicorn_config_filename)    { "unicorn.rb" }
+          _cset(:unicorn_shared_socket_dir)  { "#{fetch(:shared_path)}/sockets" }
         end
 
         # Check if a remote process exists using its pid file
@@ -214,6 +217,17 @@ module CapistranoUnicorn
                 echo "Unicorn is not running.";
               fi;
             END
+          end
+
+          desc 'Setup project to use Unicorn'
+          task :setup, :roles => unicorn_roles, :except => {:no_release => true} do
+            # Create a sockets directory if one doesn't already exist
+            run "mkdir -p #{unicorn_shared_socket_dir}"
+          end
+
+          desc 'Link unicorn_shared_socket_dir to tmp/sockets'
+          task :link_socket_dir, :roles => unicorn_roles, :except => {:no_release => true} do
+            run "ln -s #{unicorn_shared_socket_dir} #{release_path}/tmp/sockets"
           end
         end
       end
