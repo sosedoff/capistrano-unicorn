@@ -227,7 +227,7 @@ module CapistranoUnicorn
 
           desc 'Link unicorn_shared_socket_dir to tmp/sockets'
           task :link_socket_dir, :roles => unicorn_roles, :except => {:no_release => true} do
-            run "ln -s #{unicorn_shared_socket_dir} #{release_path}/tmp/sockets"
+            run "ln -s #{unicorn_shared_socket_dir} #{latest_release}/tmp/sockets"
           end
         end
       end
