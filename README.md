@@ -28,11 +28,23 @@ And load it into your deployment script `config/deploy.rb`:
 require 'capistrano-unicorn'
 ```
 
+Add unicorn setup task hook:
+
+```ruby
+after 'deploy:setup', 'unicorn:setup'   # Needed if you've configured Unicorn to use a UNIX Socket file.
+```
+
 Add unicorn restart task hook:
 
 ```ruby
 after 'deploy:restart', 'unicorn:reload' # app IS NOT preloaded
 after 'deploy:restart', 'unicorn:restart'  # app preloaded
+```
+
+Add unicorn shared sockets hook:
+
+```ruby
+after 'deploy:finalize_update', 'unicorn:link_socket_dir' # Needed if you've configured Unicorn to use a UNIX Socket file
 ```
 
 Create a new configuration file `config/unicorn.rb` or `config/unicorn/STAGE.rb`, where stage is your deployment environment.
@@ -59,14 +71,15 @@ cap unicorn:reload
 
 You can modify any of the following options in your `deploy.rb` config.
 
-- `unicorn_env`             - Set unicorn environment. Default to `rails_env` variable.
-- `unicorn_pid`             - Set unicorn PID file path. Default to `current_path/tmp/pids/unicorn.pid`
-- `unicorn_bin`             - Set unicorn executable file. Default to `unicorn`.
-- `unicorn_bundle`          - Set bundler command for unicorn. Default to `bundle`.
-- `unicorn_user`            - Launch unicorn master as the specified user. Default to `user` variable.
-- `unicorn_roles`           - Define which roles to perform unicorn recpies on. Default to `:app`.
-- `unicorn_config_path`     - Set the directory where unicorn config files reside. Default to `current_path/config`.
-- `unicorn_config_filename` - Set the filename of the unicorn config file. Not used in multistage installations. Default to `unicorn.rb`.
+- `unicorn_env`               - Set unicorn environment. Default to `rails_env` variable.
+- `unicorn_pid`               - Set unicorn PID file path. Default to `current_path/tmp/pids/unicorn.pid`
+- `unicorn_bin`               - Set unicorn executable file. Default to `unicorn`.
+- `unicorn_bundle`            - Set bundler command for unicorn. Default to `bundle`.
+- `unicorn_user`              - Launch unicorn master as the specified user. Default to `user` variable.
+- `unicorn_roles`             - Define which roles to perform unicorn recpies on. Default to `:app`.
+- `unicorn_config_path`       - Set the directory where unicorn config files reside. Default to `current_path/config`.
+- `unicorn_config_filename`   - Set the filename of the unicorn config file. Not used in multistage installations. Default to `unicorn.rb`.
+- `unicorn_shared_socket_dir` - Set the shared socket path where the unicorn sockets should live. Default to `shared_path/sockets`. 
 
 ### Multistage
 
@@ -84,6 +97,8 @@ cap unicorn:restart                   # Restart Unicorn
 cap unicorn:shutdown                  # Immediately shutdown Unicorn
 cap unicorn:start                     # Start Unicorn master process
 cap unicorn:stop                      # Stop Unicorn
+cap unicorn:setup                     # Setup the project (i.e. create the shared sockets directory)
+cap unicorn:link_socket_dir           # Link the shared sockets directory to tmp/sockets
 ```
 
 ## License
