@@ -2,6 +2,9 @@
 
 Capistrano plugin that integrates Unicorn tasks into capistrano deployment script.
 
+**Developers:** Please consider contributing your forked changes, or opening an issue if there is no existing relevant one.
+There are a lot of forks--we'd love to reabsorb some of the issues/solutions the community has encountered.
+
 ## Installation
 
 Install library from rubygems:
