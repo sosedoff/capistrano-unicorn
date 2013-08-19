@@ -140,7 +140,7 @@ module CapistranoUnicorn
         end
 
         def unicorn_roles
-          fetch(:unicorn_roles, :app)
+          defer{ fetch(:unicorn_roles, :app) }
         end
 
         #
