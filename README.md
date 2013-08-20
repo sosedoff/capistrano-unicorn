@@ -57,7 +57,7 @@ You can modify any of the following options in your `deploy.rb` config.
 - `unicorn_pid`             - Set unicorn PID file path. Default to `current_path/tmp/pids/unicorn.pid`
 - `unicorn_bin`             - Set unicorn executable file. Default to `unicorn`.
 - `unicorn_bundle`          - Set bundler command for unicorn. Default to `bundle`.
-- `unicorn_user`            - Launch unicorn master as the specified user. Default to `user` variable.
+- `unicorn_user`            - Launch unicorn master as the specified user via `sudo`. Default to `nil`, which means no use of `sudo`, i.e. run as the user defined by the `user` variable.
 - `unicorn_roles`           - Define which roles to perform unicorn recipes on. Default to `:app`.
 - `unicorn_config_path`     - Set the directory where unicorn config files reside. Default to `current_path/config`.
 - `unicorn_config_filename` - Set the filename of the unicorn config file loaded from `unicorn_config_path`. Should not be present in multistage installations. Default to `unicorn.rb`.
