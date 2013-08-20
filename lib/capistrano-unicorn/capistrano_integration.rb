@@ -32,7 +32,7 @@ module CapistranoUnicorn
           _cset(:bundle_gemfile)             { fetch(:app_path) + '/Gemfile' }
 
           # Execution
-          _cset(:unicorn_bundle)             { fetch(:bundle_cmd) rescue 'bundle' }
+          _cset(:unicorn_bundle)             { fetch(:bundle_cmd, "bundle") }
           _cset(:unicorn_bin)                { "unicorn" }
           _cset(:unicorn_options)            { '' }
           _cset(:unicorn_restart_sleep_time) { 2 }
