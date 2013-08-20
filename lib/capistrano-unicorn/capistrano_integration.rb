@@ -18,7 +18,7 @@ module CapistranoUnicorn
       capistrano_config.load do
         before(CapistranoIntegration::TASKS) do
           _cset(:app_env)                    { (fetch(:rails_env) rescue 'production') }
-          _cset(:unicorn_pid)                { "#{fetch(:current_path)}/tmp/pids/unicorn.pid" }
+          _cset(:unicorn_pid)                { "#{fetch(:shared_path)}/tmp/pids/unicorn.pid" }
           _cset(:unicorn_env)                { fetch(:app_env) }
           _cset(:unicorn_bin)                { "unicorn" }
           _cset(:unicorn_bundle)             { fetch(:bundle_cmd) rescue 'bundle' }
@@ -120,7 +120,7 @@ module CapistranoUnicorn
             fi;
 
             echo "Starting Unicorn...";
-            cd #{current_path} && #{try_unicorn_user} BUNDLE_GEMFILE=#{current_path}/Gemfile #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
+            cd #{current_path} && #{try_unicorn_user} BUNDLE_GEMFILE=#{current_path}/Gemfile #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{unicorn_env} -D;
           END
 
           script
