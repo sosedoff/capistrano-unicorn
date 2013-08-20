@@ -5,8 +5,28 @@ describe CapistranoUnicorn::CapistranoIntegration, "loaded into a configuration"
     @configuration = Capistrano::Configuration.new
     @configuration.extend(Capistrano::Spec::ConfigurationExtension)
     CapistranoUnicorn::CapistranoIntegration.load_into(@configuration)
+  end
 
-    @configuration.stub(:_cset)
+  describe "unicorn_env" do
+    before do
+      # define _cset etc. from capistrano
+      @configuration.load 'deploy'
+
+      # capistrano-unicorn variables are set during a 'before'
+      # callback, so in order to be able to test the result, we need
+      # to ensure the callback is triggered.
+      @configuration.trigger :before
+    end
+
+    it "should default to value of rails_env if set" do
+      @configuration.set(:rails_env, :staging)
+      @configuration.fetch(:unicorn_env).should == \
+        @configuration.fetch(:rails_env)
+    end
+
+    it "should default to production if rails_env not set" do
+      @configuration.fetch(:unicorn_env).should == 'production'
+    end
   end
 
   shared_examples_for "a task" do |task_name|
@@ -29,6 +49,7 @@ describe CapistranoUnicorn::CapistranoIntegration, "loaded into a configuration"
     describe 'unicorn:start' do
       before do
         @configuration.stub(:start_unicorn)
+        @configuration.stub(:_cset)
       end
 
       it_behaves_like "a task", 'unicorn:start'
@@ -43,6 +64,7 @@ describe CapistranoUnicorn::CapistranoIntegration, "loaded into a configuration"
     describe 'unicorn:stop' do
       before do
         @configuration.stub(:kill_unicorn)
+        @configuration.stub(:_cset)
       end
 
       it_behaves_like "a task", 'unicorn:stop'

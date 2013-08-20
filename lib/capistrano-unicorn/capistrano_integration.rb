@@ -21,7 +21,7 @@ module CapistranoUnicorn
           _cset(:app_subdir)                 { '' }
           _cset(:app_path)                   { fetch(:current_path) + fetch(:app_subdir) }
           _cset(:unicorn_pid)                { "#{fetch(:app_path)}/tmp/pids/unicorn.pid" }
-          _cset(:unicorn_env)                { fetch(:app_env) }
+          _cset(:unicorn_env)                { fetch(:rails_env, 'production' ) }
           _cset(:unicorn_bin)                { "unicorn" }
           _cset(:unicorn_bundle)             { fetch(:bundle_cmd) rescue 'bundle' }
           _cset(:bundle_gemfile)             { fetch(:app_path) + '/Gemfile' }
