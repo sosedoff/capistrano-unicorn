@@ -70,6 +70,7 @@ You can modify any of the following options in your `deploy.rb` config.
 - `unicorn_roles`           - Define which roles to perform unicorn recpies on. Default to `:app`.
 - `unicorn_config_path`     - Set the directory where unicorn config files reside. Default to `current_path/config`.
 - `unicorn_config_filename` - Set the filename of the unicorn config file. Not used in multistage installations. Default to `unicorn.rb`.
+- `app_subdir`              - If your app lives in a subdirectory 'rails' (say) of your repository, set this to 'foo/' (the trailing slash is required).
 
 ### Multistage
 
