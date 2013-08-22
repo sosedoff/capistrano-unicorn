@@ -18,13 +18,16 @@ module CapistranoUnicorn
       capistrano_config.load do
         before(CapistranoIntegration::TASKS) do
           _cset(:app_env)                    { (fetch(:rails_env) rescue 'production') }
-          _cset(:unicorn_pid)                { "#{fetch(:current_path)}/tmp/pids/unicorn.pid" }
+          _cset(:app_subdir)                 { '' }
+          _cset(:app_path)                   { fetch(:current_path) + fetch(:app_subdir) }
+          _cset(:unicorn_pid)                { "#{fetch(:app_path)}/tmp/pids/unicorn.pid" }
           _cset(:unicorn_env)                { fetch(:app_env) }
           _cset(:unicorn_bin)                { "unicorn" }
           _cset(:unicorn_bundle)             { fetch(:bundle_cmd) rescue 'bundle' }
+          _cset(:bundle_gemfile)             { fetch(:app_path) + '/Gemfile' }
           _cset(:unicorn_restart_sleep_time) { 2 }
           _cset(:unicorn_user)               { nil }
-          _cset(:unicorn_config_path)        { "#{fetch(:current_path)}/config" }
+          _cset(:unicorn_config_path)        { "#{fetch(:app_path)}/config" }
           _cset(:unicorn_config_filename)    { "unicorn.rb" }
         end
 
@@ -120,7 +123,7 @@ module CapistranoUnicorn
             fi;
 
             echo "Starting Unicorn...";
-            cd #{current_path} && #{try_unicorn_user} BUNDLE_GEMFILE=#{current_path}/Gemfile #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
+            cd #{app_path} && #{try_unicorn_user} BUNDLE_GEMFILE=#{bundle_gemfile} #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
           END
 
           script
