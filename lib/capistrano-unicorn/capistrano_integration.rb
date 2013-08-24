@@ -111,14 +111,14 @@ module CapistranoUnicorn
           primary_config_path = "#{unicorn_config_path}/#{unicorn_config_filename}"
           secondary_config_path = "#{unicorn_config_path}/unicorn/#{unicorn_env}.rb"
 
-          script = <<-END
+          %Q%
             if [ -e #{primary_config_path} ]; then
               UNICORN_CONFIG_PATH=#{primary_config_path};
             else
               if [ -e #{secondary_config_path} ]; then
                 UNICORN_CONFIG_PATH=#{secondary_config_path};
               else
-                echo "Config file for \"#{unicorn_env}\" environment was not found at either \"#{primary_config_path}\" or \"#{secondary_config_path}\"";
+                echo "Config file for "#{unicorn_env}" environment was not found at either "#{primary_config_path}" or "#{secondary_config_path}"";
                 exit 1;
               fi;
             fi;
@@ -134,9 +134,7 @@ module CapistranoUnicorn
 
             echo "Starting Unicorn...";
             cd #{app_path} && #{try_unicorn_user} RAILS_ENV=#{rails_env} BUNDLE_GEMFILE=#{bundle_gemfile} #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{unicorn_rack_env} -D #{unicorn_options};
-          END
-
-          script
+          %
         end
 
         def duplicate_unicorn
