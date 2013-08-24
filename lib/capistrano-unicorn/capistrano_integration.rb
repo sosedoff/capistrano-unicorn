@@ -112,10 +112,10 @@ module CapistranoUnicorn
           secondary_config_path = "#{unicorn_config_path}/unicorn/#{unicorn_env}.rb"
 
           %Q%
-            if [ -e #{primary_config_path} ]; then
+            if [ -e "#{primary_config_path}" ]; then
               UNICORN_CONFIG_PATH=#{primary_config_path};
             else
-              if [ -e #{secondary_config_path} ]; then
+              if [ -e "#{secondary_config_path}" ]; then
                 UNICORN_CONFIG_PATH=#{secondary_config_path};
               else
                 echo "Config file for "#{unicorn_env}" environment was not found at either "#{primary_config_path}" or "#{secondary_config_path}"";
@@ -123,7 +123,7 @@ module CapistranoUnicorn
               fi;
             fi;
 
-            if [ -e #{unicorn_pid} ]; then
+            if [ -e "#{unicorn_pid}" ]; then
               if #{try_unicorn_user} kill -0 `cat #{unicorn_pid}` > /dev/null 2>&1; then
                 echo "Unicorn is already running!";
                 exit 0;
