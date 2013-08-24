@@ -7,6 +7,8 @@ There are a lot of forks--we'd love to reabsorb some of the issues/solutions the
 
 ## Usage
 
+If you are upgrading from a previous version, please see the [NEWS file](NEWS.md).
+
 ### Setup
 
 Add the library to your `Gemfile`:
