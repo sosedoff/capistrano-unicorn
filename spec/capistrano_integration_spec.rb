@@ -26,13 +26,46 @@ describe CapistranoUnicorn::CapistranoIntegration, "loaded into a configuration"
       end
 
       shared_examples_for "an app in path" do |app_path|
+        let(:shell) { :` } # ` } work around confused emacs ruby-mode
+
         specify "app_path should default to #{app_path}" do
           @configuration.fetch(:app_path).should == app_path
         end
 
-        specify "pid file should default correctly" do
+        it "should default to a sensible pid file when auto-detection failed" do
+          @configuration.should_receive(shell).with(/unicorn -c /).and_return('') do |cmd|
+            $?.should_receive(:success?).and_return(false)
+          end
+          @configuration.logger.stub(:important)
           @configuration.fetch(:unicorn_pid).should == app_path + "/tmp/pids/unicorn.pid"
         end
+
+        shared_examples "auto-detect pid file from unicorn config" do
+          |pid_file, primary_exists, config_file|
+          which_config = primary_exists ? 'primary' : 'stage'
+          it "should auto-detect pid file from #{which_config} unicorn config" do
+            # Tempfile.new in Ruby 1.9.2 will call File.exist?
+            allow(File).to receive(:exist?).with(/tmp/)
+
+            File.should_receive(:exist?).with('config/unicorn.rb').and_return(primary_exists)
+            tmpfile = nil
+            @configuration.should_receive(shell).with(/unicorn -c /) do |cmd|
+              (cmd =~ /^unicorn -c "(.+)"$/).should be_true
+              tmpfile = $~[1]
+              tmpfile.should include("tmp")
+              File.read(tmpfile).should include(%!config_file = "#{config_file}"!)
+              $?.should_receive(:success?).and_return(true)
+              pid_file
+            end
+            @configuration.fetch(:unicorn_pid).should == pid_file
+          end
+        end
+
+        include_examples "auto-detect pid file from unicorn config", \
+          '/path/to/pid/from/config/file', true, "config/unicorn.rb"
+
+        include_examples "auto-detect pid file from unicorn config", \
+          '/path/to/pid/from/stage/config/file', false, "config/unicorn/production.rb"
 
         specify "Gemfile should default correctly" do
           @configuration.fetch(:bundle_gemfile).should == app_path + "/Gemfile"

@@ -55,6 +55,8 @@ cap unicorn:reload
 ## Configuration
 
 You can modify any of the following Capistrano variables in your `deploy.rb` config.
+You can use the `unicorn:show_vars` task to check that the values you have specified
+are set correctly.
 
 ### Environment parameters
 
@@ -79,12 +81,10 @@ You can modify any of the following Capistrano variables in your `deploy.rb` con
 ### Absolute path parameters
 
 - `app_path`                - Set path to app root. Default to `current_path + app_subdir`.
-- `unicorn_pid`             - Set unicorn PID file path. Default to `#{current_path}/tmp/pids/unicorn.pid`
+- `unicorn_pid`             - Set unicorn PID file path. By default, attempts to auto-detect from unicorn config file. On failure, falls back to value in `unicorn_default_pid`
+- `unicorn_default_pid`     - See above. Default to `#{current_path}/tmp/pids/unicorn.pid`
 - `bundle_gemfile`          - Set path to Gemfile. Default to `#{app_path}/Gemfile`
 - `unicorn_config_path`     - Set the directory where unicorn config files reside. Default to `#{current_path}/config`.
-
-You can use the `unicorn:show_vars` task to test the impact of your
-`deploy.rb`.
 
 ## Available Tasks
 

@@ -14,6 +14,9 @@ Significant changes since 0.1.10 are as follows.  Backwards-incompatible changes
     *   Add `unicorn_options` variable which allows passing of arbitrary options to unicorn.
     *   Added `app_subdir` to support app running in a subdirectory.
     *   Updated documentation in [README](README.md) to fix inaccuracies and ambiguities.
+    *   `unicorn_pid` defaults to attempting to auto-detect from unicorn config file.
+        This avoids having to keep two paths in sync.
+        https://github.com/sosedoff/capistrano-unicorn/issues/7
     *   Also added the `unicorn:show_vars` task to make it easier to debug
         config variable values client-side.
 *   Defer calculation of `unicorn-roles`.
