@@ -18,6 +18,46 @@ describe CapistranoUnicorn::CapistranoIntegration, "loaded into a configuration"
       @configuration.trigger :before
     end
 
+    describe "app paths" do
+      cur_path = '/path/to/myapp'
+
+      before do
+        @configuration.set(:current_path, cur_path)
+      end
+
+      shared_examples_for "an app in path" do |app_path|
+        specify "app_path should default to #{app_path}" do
+          @configuration.fetch(:app_path).should == app_path
+        end
+
+        specify "pid file should default correctly" do
+          @configuration.fetch(:unicorn_pid).should == app_path + "/tmp/pids/unicorn.pid"
+        end
+
+        specify "Gemfile should default correctly" do
+          @configuration.fetch(:bundle_gemfile).should == app_path + "/Gemfile"
+        end
+
+        specify "config/ directory should default correctly" do
+          @configuration.fetch(:unicorn_config_path).should == app_path + "/config"
+        end
+      end
+
+      context "app in current_path" do
+        it_should_behave_like "an app in path", cur_path
+      end
+
+      context "app in a subdirectory" do
+        subdir = 'mysubdir'
+
+        before do
+          @configuration.set(:app_subdir, '/' + subdir)
+        end
+
+        it_should_behave_like "an app in path", cur_path + '/' + subdir
+      end
+    end
+
     describe "unicorn_env" do
       it "should default to value of rails_env if set" do
         @configuration.set(:rails_env, 'staging')

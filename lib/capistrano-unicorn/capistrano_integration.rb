@@ -27,9 +27,9 @@ module CapistranoUnicorn
 
           # Paths
           _cset(:app_subdir)                 { '' }
-          _cset(:app_path)                   { fetch(:current_path) + fetch(:app_subdir) }
-          _cset(:unicorn_pid)                { "#{fetch(:app_path)}/tmp/pids/unicorn.pid" }
-          _cset(:bundle_gemfile)             { fetch(:app_path) + '/Gemfile' }
+          _cset(:app_path)                   { current_path + app_subdir }
+          _cset(:unicorn_pid)                { app_path + "/tmp/pids/unicorn.pid" }
+          _cset(:bundle_gemfile)             { app_path + '/Gemfile' }
 
           # Execution
           _cset(:unicorn_bundle)             { fetch(:bundle_cmd, "bundle") }
@@ -37,7 +37,7 @@ module CapistranoUnicorn
           _cset(:unicorn_options)            { '' }
           _cset(:unicorn_restart_sleep_time) { 2 }
           _cset(:unicorn_user)               { nil }
-          _cset(:unicorn_config_path)        { "#{fetch(:app_path)}/config" }
+          _cset(:unicorn_config_path)        { app_path + "/config" }
           _cset(:unicorn_config_filename)    { "unicorn.rb" }
         end
 
