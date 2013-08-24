@@ -66,7 +66,7 @@ You can modify any of the following options in your `deploy.rb` config.
 - `unicorn_env`             - Set basename of unicorn config `.rb` file to be used loaded from `unicorn_config_path`. Default to `rails_env` variable if set, otherwise `production`.
 - `unicorn_rack_env`        - Set the value which will be passed to unicorn via [the `-E` parameter as the Rack environment](http://unicorn.bogomips.org/unicorn_1.html). Valid values are `development`, `deployment`, and `none`. Default to `development` if `rails_env` is `development`, otherwise `deployment`.
 - `unicorn_options`         - Set any additional options to be passed to unicorn on startup.
-- `app_subdir`              - If your app lives in a subdirectory 'rails' (say) of your repository, set this to 'foo/' (the trailing slash is required).
+- `app_subdir`              - If your app lives in a subdirectory 'rails' (say) of your repository, set this to '/rails' (the leading slash is required).
 
 You can use the `unicorn:show_vars` task to test the impact of your
 `deploy.rb`.
