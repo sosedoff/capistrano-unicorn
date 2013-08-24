@@ -39,8 +39,8 @@ module CapistranoUnicorn
           _cset(:unicorn_user)               { nil }
           _cset(:unicorn_config_path)        { app_path + "/config" }
           _cset(:unicorn_config_filename)    { "unicorn.rb" }
-          _cset(:primary_config_path)        { "#{unicorn_config_path}/#{unicorn_config_filename}" }
-          _cset(:secondary_config_path) \
+          _cset(:unicorn_config_file_path)   { "#{unicorn_config_path}/#{unicorn_config_filename}" }
+          _cset(:unicorn_config_stage_file_path) \
                                              { "#{unicorn_config_path}/unicorn/#{unicorn_env}.rb" }
         end
 
@@ -112,13 +112,13 @@ module CapistranoUnicorn
         #
         def start_unicorn
           %Q%
-            if [ -e "#{primary_config_path}" ]; then
-              UNICORN_CONFIG_PATH=#{primary_config_path};
+            if [ -e "#{unicorn_config_file_path}" ]; then
+              UNICORN_CONFIG_PATH=#{unicorn_config_file_path};
             else
-              if [ -e "#{secondary_config_path}" ]; then
-                UNICORN_CONFIG_PATH=#{secondary_config_path};
+              if [ -e "#{unicorn_config_stage_file_path}" ]; then
+                UNICORN_CONFIG_PATH=#{unicorn_config_stage_file_path};
               else
-                echo "Config file for "#{unicorn_env}" environment was not found at either "#{primary_config_path}" or "#{secondary_config_path}"";
+                echo "Config file for "#{unicorn_env}" environment was not found at either "#{unicorn_config_file_path}" or "#{unicorn_config_stage_file_path}"";
                 exit 1;
               fi;
             fi;

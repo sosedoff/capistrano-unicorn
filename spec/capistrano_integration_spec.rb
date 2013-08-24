@@ -42,17 +42,17 @@ describe CapistranoUnicorn::CapistranoIntegration, "loaded into a configuration"
           @configuration.fetch(:unicorn_config_path).should == app_path + "/config"
         end
 
-        specify "primary config file should default correctly" do
-          @configuration.fetch(:primary_config_path).should == app_path + "/config/unicorn.rb"
+        specify "config file should default correctly" do
+          @configuration.fetch(:unicorn_config_file_path).should == app_path + "/config/unicorn.rb"
         end
 
-        specify "secondary config file should default correctly" do
-          @configuration.fetch(:secondary_config_path).should == app_path + "/config/unicorn/production.rb"
+        specify "per-stage config file should default correctly" do
+          @configuration.fetch(:unicorn_config_stage_file_path).should == app_path + "/config/unicorn/production.rb"
         end
 
-        specify "secondary config file should be set correctly for different environment" do
+        specify "per-stage config file should be set correctly for different environment" do
           @configuration.set(:rails_env, 'staging')
-          @configuration.fetch(:secondary_config_path).should == app_path + "/config/unicorn/staging.rb"
+          @configuration.fetch(:unicorn_config_stage_file_path).should == app_path + "/config/unicorn/staging.rb"
         end
       end
 
@@ -111,8 +111,8 @@ describe CapistranoUnicorn::CapistranoIntegration, "loaded into a configuration"
       @configuration.should_receive(:_cset).with(:app_path)
       @configuration.should_receive(:_cset).with(:unicorn_pid)
       @configuration.should_receive(:_cset).with(:bundle_gemfile)
-      @configuration.should_receive(:_cset).with(:primary_config_path)
-      @configuration.should_receive(:_cset).with(:secondary_config_path)
+      @configuration.should_receive(:_cset).with(:unicorn_config_file_path)
+      @configuration.should_receive(:_cset).with(:unicorn_config_stage_file_path)
 
       # Execution
       @configuration.should_receive(:_cset).with(:unicorn_bundle)
