@@ -39,6 +39,9 @@ module CapistranoUnicorn
           _cset(:unicorn_user)               { nil }
           _cset(:unicorn_config_path)        { app_path + "/config" }
           _cset(:unicorn_config_filename)    { "unicorn.rb" }
+          _cset(:primary_config_path)        { "#{unicorn_config_path}/#{unicorn_config_filename}" }
+          _cset(:secondary_config_path) \
+                                             { "#{unicorn_config_path}/unicorn/#{unicorn_env}.rb" }
         end
 
         # Check if a remote process exists using its pid file
@@ -108,9 +111,6 @@ module CapistranoUnicorn
         # Start the Unicorn server
         #
         def start_unicorn
-          primary_config_path = "#{unicorn_config_path}/#{unicorn_config_filename}"
-          secondary_config_path = "#{unicorn_config_path}/unicorn/#{unicorn_env}.rb"
-
           %Q%
             if [ -e "#{primary_config_path}" ]; then
               UNICORN_CONFIG_PATH=#{primary_config_path};
