@@ -1,17 +1,9 @@
-# Capistrano Unicorn
+# Capistrano Unicorn [![Build Status](https://travis-ci.org/sosedoff/capistrano-unicorn.png?branch=master)](https://travis-ci.org/sosedoff/capistrano-unicorn)
 
 Capistrano plugin that integrates Unicorn tasks into capistrano deployment script.
 
 **Developers:** Please consider contributing your forked changes, or opening an issue if there is no existing relevant one.
 There are a lot of forks--we'd love to reabsorb some of the issues/solutions the community has encountered.
-
-## Installation
-
-Install library from rubygems:
-
-```
-gem install capistrano-unicorn
-```
 
 ## Usage
 
@@ -34,7 +26,7 @@ require 'capistrano-unicorn'
 Add unicorn restart task hook:
 
 ```ruby
-after 'deploy:restart', 'unicorn:reload' # app IS NOT preloaded
+after 'deploy:restart', 'unicorn:reload'   # app IS NOT preloaded
 after 'deploy:restart', 'unicorn:restart'  # app preloaded
 ```
 
@@ -42,7 +34,7 @@ Create a new configuration file `config/unicorn.rb` or `config/unicorn/STAGE.rb`
 
 Example config - [examples/rails3.rb](https://github.com/sosedoff/capistrano-unicorn/blob/master/examples/rails3.rb). Please refer to unicorn documentation for more examples and configuration options.
 
-### Test
+### Deploy
 
 First, make sure you're running the latest release:
 
@@ -88,6 +80,14 @@ cap unicorn:restart                   # Restart Unicorn
 cap unicorn:shutdown                  # Immediately shutdown Unicorn
 cap unicorn:start                     # Start Unicorn master process
 cap unicorn:stop                      # Stop Unicorn
+```
+
+## Tests
+
+To execute test suite run:
+
+```
+bundle exec rake test
 ```
 
 ## License
