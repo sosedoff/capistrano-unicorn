@@ -242,7 +242,7 @@ module CapistranoUnicorn
               sleep #{unicorn_restart_sleep_time};
 
               if #{old_unicorn_is_running?}; then
-                #{unicorn_send_signal('WINCH', get_old_unicorn_pid)}
+                #{unicorn_send_signal('WINCH', get_old_unicorn_pid)};
               fi;
             END
           end
