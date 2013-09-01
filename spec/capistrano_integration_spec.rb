@@ -58,6 +58,7 @@ describe CapistranoUnicorn::CapistranoIntegration, "loaded into a configuration"
       @configuration.should_receive(:_cset).with(:unicorn_rack_env)
       @configuration.should_receive(:_cset).with(:unicorn_config_path)
       @configuration.should_receive(:_cset).with(:unicorn_config_filename)
+      @configuration.should_receive(:_cset).with(:unicorn_options)
 
       @configuration.find_and_execute_task(task_name)
     end
