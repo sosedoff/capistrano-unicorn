@@ -11,26 +11,32 @@ module CapistranoUnicorn
       'unicorn:reload',
       'unicorn:shutdown',
       'unicorn:add_worker',
-      'unicorn:remove_worker'
+      'unicorn:remove_worker',
+      'unicorn:show_vars',
     ]
 
     def self.load_into(capistrano_config)
       capistrano_config.load do
         before(CapistranoIntegration::TASKS) do
+          # Environments
+          _cset(:unicorn_env)                { fetch(:rails_env, 'production' ) }
           _cset(:unicorn_rack_env) do
             # Following recommendations from http://unicorn.bogomips.org/unicorn_1.html
             fetch(:rails_env) == 'development' ? 'development' : 'deployment'
           end
+
+          # Paths
           _cset(:app_subdir)                 { '' }
           _cset(:app_path)                   { fetch(:current_path) + fetch(:app_subdir) }
           _cset(:unicorn_pid)                { "#{fetch(:app_path)}/tmp/pids/unicorn.pid" }
-          _cset(:unicorn_env)                { fetch(:rails_env, 'production' ) }
-          _cset(:unicorn_bin)                { "unicorn" }
-          _cset(:unicorn_bundle)             { fetch(:bundle_cmd) rescue 'bundle' }
           _cset(:bundle_gemfile)             { fetch(:app_path) + '/Gemfile' }
+
+          # Execution
+          _cset(:unicorn_bundle)             { fetch(:bundle_cmd) rescue 'bundle' }
+          _cset(:unicorn_bin)                { "unicorn" }
+          _cset(:unicorn_options)            { '' }
           _cset(:unicorn_restart_sleep_time) { 2 }
           _cset(:unicorn_user)               { nil }
-          _cset(:unicorn_options)            { '' }
           _cset(:unicorn_config_path)        { "#{fetch(:app_path)}/config" }
           _cset(:unicorn_config_filename)    { "unicorn.rb" }
         end
@@ -154,6 +160,31 @@ module CapistranoUnicorn
         # Unicorn cap tasks
         #
         namespace :unicorn do
+          desc 'Debug Unicorn variables'
+          task :show_vars, :roles => :app do
+            puts <<-EOF.gsub(/^ +/, '')
+
+              # Environments
+              rails_env               "#{rails_env}"
+              unicorn_env             "#{unicorn_env}"
+              unicorn_rack_env        "#{unicorn_rack_env}"
+
+              # Paths
+              app_subdir              "#{app_subdir}"
+              app_path                "#{app_path}"
+              unicorn_pid             "#{unicorn_pid}"
+              bundle_gemfile          "#{bundle_gemfile}"
+              unicorn_config_path     "#{unicorn_config_path}"
+              unicorn_config_filename "#{unicorn_config_filename}"
+
+              # Execution
+              unicorn_user            #{unicorn_user.inspect}
+              unicorn_bundle          "#{unicorn_bundle}"
+              unicorn_bin             "#{unicorn_bin}"
+              unicorn_options         "#{unicorn_options}"
+            EOF
+          end
+
           desc 'Start Unicorn master process'
           task :start, :roles => unicorn_roles, :except => {:no_release => true} do
             run start_unicorn

@@ -49,16 +49,24 @@ describe CapistranoUnicorn::CapistranoIntegration, "loaded into a configuration"
 
   shared_examples_for "a task" do |task_name|
     it "sets attributes in before_task hook" do
-      @configuration.should_receive(:_cset).with(:unicorn_pid)
+      # Environments
       @configuration.should_receive(:_cset).with(:unicorn_env)
-      @configuration.should_receive(:_cset).with(:unicorn_bin)
+      @configuration.should_receive(:_cset).with(:unicorn_rack_env)
+
+      # Paths
+      @configuration.should_receive(:_cset).with(:app_subdir)
+      @configuration.should_receive(:_cset).with(:app_path)
+      @configuration.should_receive(:_cset).with(:unicorn_pid)
+      @configuration.should_receive(:_cset).with(:bundle_gemfile)
+
+      # Execution
       @configuration.should_receive(:_cset).with(:unicorn_bundle)
+      @configuration.should_receive(:_cset).with(:unicorn_bin)
+      @configuration.should_receive(:_cset).with(:unicorn_options)
       @configuration.should_receive(:_cset).with(:unicorn_restart_sleep_time)
       @configuration.should_receive(:_cset).with(:unicorn_user)
-      @configuration.should_receive(:_cset).with(:unicorn_rack_env)
       @configuration.should_receive(:_cset).with(:unicorn_config_path)
       @configuration.should_receive(:_cset).with(:unicorn_config_filename)
-      @configuration.should_receive(:_cset).with(:unicorn_options)
 
       @configuration.find_and_execute_task(task_name)
     end

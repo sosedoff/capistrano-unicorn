@@ -66,6 +66,9 @@ You can modify any of the following options in your `deploy.rb` config.
 - `unicorn_options`         - Set any additional options to be passed to unicorn on startup.
 - `app_subdir`              - If your app lives in a subdirectory 'rails' (say) of your repository, set this to 'foo/' (the trailing slash is required).
 
+You can use the `unicorn:show_vars` task to test the impact of your
+`deploy.rb`.
+
 ### Multistage
 
 If you are using capistrano multistage, please refer to [Using capistrano unicorn with multistage environment](https://github.com/sosedoff/capistrano-unicorn/wiki/Using-capistrano-unicorn-with-multistage-environment).
@@ -79,6 +82,7 @@ cap unicorn:add_worker                # Add a new worker
 cap unicorn:remove_worker             # Remove amount of workers
 cap unicorn:reload                    # Reload Unicorn
 cap unicorn:restart                   # Restart Unicorn
+cap unicorn:show_vars                 # Debug Unicorn variables
 cap unicorn:shutdown                  # Immediately shutdown Unicorn
 cap unicorn:start                     # Start Unicorn master process
 cap unicorn:stop                      # Stop Unicorn
