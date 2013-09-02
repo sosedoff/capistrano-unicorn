@@ -7,7 +7,7 @@ describe CapistranoUnicorn::CapistranoIntegration, "loaded into a configuration"
     CapistranoUnicorn::CapistranoIntegration.load_into(@configuration)
   end
 
-  describe "unicorn_env" do
+  context "testing variables" do
     before do
       # define _cset etc. from capistrano
       @configuration.load 'deploy'
@@ -18,26 +18,44 @@ describe CapistranoUnicorn::CapistranoIntegration, "loaded into a configuration"
       @configuration.trigger :before
     end
 
-    it "should default to value of rails_env if set" do
-      @configuration.set(:rails_env, :staging)
-      @configuration.fetch(:unicorn_env).should == \
-        @configuration.fetch(:rails_env)
+    describe "unicorn_env" do
+      it "should default to value of rails_env if set" do
+        @configuration.set(:rails_env, 'staging')
+        @configuration.fetch(:unicorn_env).should == \
+          @configuration.fetch(:rails_env)
+      end
+
+      it "should default to production if rails_env not set" do
+        @configuration.fetch(:unicorn_env).should == 'production'
+      end
     end
 
-    it "should default to production if rails_env not set" do
-      @configuration.fetch(:unicorn_env).should == 'production'
+    describe "unicorn_rack_env" do
+      it "should default to deployment if rails_env not set" do
+        @configuration.fetch(:unicorn_rack_env).should == 'deployment'
+      end
+
+      it "should default to development if rails_env set to development" do
+        @configuration.set(:rails_env, 'development')
+        @configuration.fetch(:unicorn_rack_env).should == 'development'
+      end
+
+      it "should default to deployment if rails_env set to anything else" do
+        @configuration.set(:rails_env, 'staging')
+        @configuration.fetch(:unicorn_rack_env).should == 'deployment'
+      end
     end
   end
 
   shared_examples_for "a task" do |task_name|
     it "sets attributes in before_task hook" do
-      @configuration.should_receive(:_cset).with(:app_env)
       @configuration.should_receive(:_cset).with(:unicorn_pid)
       @configuration.should_receive(:_cset).with(:unicorn_env)
       @configuration.should_receive(:_cset).with(:unicorn_bin)
       @configuration.should_receive(:_cset).with(:unicorn_bundle)
       @configuration.should_receive(:_cset).with(:unicorn_restart_sleep_time)
       @configuration.should_receive(:_cset).with(:unicorn_user)
+      @configuration.should_receive(:_cset).with(:unicorn_rack_env)
       @configuration.should_receive(:_cset).with(:unicorn_config_path)
       @configuration.should_receive(:_cset).with(:unicorn_config_filename)
 
