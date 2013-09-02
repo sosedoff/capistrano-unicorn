@@ -106,22 +106,27 @@ describe CapistranoUnicorn::CapistranoIntegration, "loaded into a configuration"
       @configuration.should_receive(:_cset).with(:unicorn_env)
       @configuration.should_receive(:_cset).with(:unicorn_rack_env)
 
-      # Paths
-      @configuration.should_receive(:_cset).with(:app_subdir)
-      @configuration.should_receive(:_cset).with(:app_path)
-      @configuration.should_receive(:_cset).with(:unicorn_pid)
-      @configuration.should_receive(:_cset).with(:bundle_gemfile)
-      @configuration.should_receive(:_cset).with(:unicorn_config_file_path)
-      @configuration.should_receive(:_cset).with(:unicorn_config_stage_file_path)
-
       # Execution
+      @configuration.should_receive(:_cset).with(:unicorn_user)
       @configuration.should_receive(:_cset).with(:unicorn_bundle)
       @configuration.should_receive(:_cset).with(:unicorn_bin)
       @configuration.should_receive(:_cset).with(:unicorn_options)
       @configuration.should_receive(:_cset).with(:unicorn_restart_sleep_time)
-      @configuration.should_receive(:_cset).with(:unicorn_user)
-      @configuration.should_receive(:_cset).with(:unicorn_config_path)
+
+      # Relative paths
+      @configuration.should_receive(:_cset).with(:app_subdir)
+      @configuration.should_receive(:_cset).with(:unicorn_config_rel_path)
       @configuration.should_receive(:_cset).with(:unicorn_config_filename)
+      @configuration.should_receive(:_cset).with(:unicorn_config_rel_file_path)
+      @configuration.should_receive(:_cset).with(:unicorn_config_stage_rel_file_path)
+
+      # Absolute paths
+      @configuration.should_receive(:_cset).with(:app_path)
+      @configuration.should_receive(:_cset).with(:unicorn_pid)
+      @configuration.should_receive(:_cset).with(:bundle_gemfile)
+      @configuration.should_receive(:_cset).with(:unicorn_config_path)
+      @configuration.should_receive(:_cset).with(:unicorn_config_file_path)
+      @configuration.should_receive(:_cset).with(:unicorn_config_stage_file_path)
 
       @configuration.find_and_execute_task(task_name)
     end

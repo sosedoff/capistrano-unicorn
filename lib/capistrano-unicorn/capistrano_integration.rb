@@ -25,23 +25,33 @@ module CapistranoUnicorn
             fetch(:rails_env) == 'development' ? 'development' : 'deployment'
           end
 
-          # Paths
-          _cset(:app_subdir)                 { '' }
-          _cset(:app_path)                   { current_path + app_subdir }
-          _cset(:unicorn_pid)                { app_path + "/tmp/pids/unicorn.pid" }
-          _cset(:bundle_gemfile)             { app_path + '/Gemfile' }
-
           # Execution
+          _cset(:unicorn_user)               { nil }
           _cset(:unicorn_bundle)             { fetch(:bundle_cmd, "bundle") }
           _cset(:unicorn_bin)                { "unicorn" }
           _cset(:unicorn_options)            { '' }
           _cset(:unicorn_restart_sleep_time) { 2 }
-          _cset(:unicorn_user)               { nil }
-          _cset(:unicorn_config_path)        { app_path + "/config" }
+
+          # Relative paths
+          _cset(:app_subdir)                 { '' }
+          _cset(:unicorn_config_rel_path)    { "config" }
           _cset(:unicorn_config_filename)    { "unicorn.rb" }
-          _cset(:unicorn_config_file_path)   { "#{unicorn_config_path}/#{unicorn_config_filename}" }
+          _cset(:unicorn_config_rel_file_path) \
+                                             { unicorn_config_rel_path + '/' + unicorn_config_filename }
+          _cset(:unicorn_config_stage_rel_file_path) \
+                                             { [ unicorn_config_rel_path, 'unicorn',
+                                                 "#{unicorn_env}.rb" ].join('/') }
+
+          # Absolute paths
+          # If you find the following confusing, try running 'cap unicorn:show_vars' -
+          # it might help :-)
+          _cset(:app_path)                   { current_path + app_subdir }
+          _cset(:unicorn_pid)                { app_path + "/tmp/pids/unicorn.pid" }
+          _cset(:bundle_gemfile)             { app_path + '/Gemfile' }
+          _cset(:unicorn_config_path)        { app_path + '/' + unicorn_config_rel_path }
+          _cset(:unicorn_config_file_path)   { app_path + '/' + unicorn_config_rel_file_path }
           _cset(:unicorn_config_stage_file_path) \
-                                             { "#{unicorn_config_path}/unicorn/#{unicorn_env}.rb" }
+                                             { app_path + '/' + unicorn_config_stage_rel_file_path }
         end
 
         # Check if a remote process exists using its pid file
@@ -163,23 +173,32 @@ module CapistranoUnicorn
             puts <<-EOF.gsub(/^ +/, '')
 
               # Environments
-              rails_env               "#{rails_env}"
-              unicorn_env             "#{unicorn_env}"
-              unicorn_rack_env        "#{unicorn_rack_env}"
-
-              # Paths
-              app_subdir              "#{app_subdir}"
-              app_path                "#{app_path}"
-              unicorn_pid             "#{unicorn_pid}"
-              bundle_gemfile          "#{bundle_gemfile}"
-              unicorn_config_path     "#{unicorn_config_path}"
-              unicorn_config_filename "#{unicorn_config_filename}"
+              rails_env          "#{rails_env}"
+              unicorn_env        "#{unicorn_env}"
+              unicorn_rack_env   "#{unicorn_rack_env}"
 
               # Execution
-              unicorn_user            #{unicorn_user.inspect}
-              unicorn_bundle          "#{unicorn_bundle}"
-              unicorn_bin             "#{unicorn_bin}"
-              unicorn_options         "#{unicorn_options}"
+              unicorn_user       #{unicorn_user.inspect}
+              unicorn_bundle     "#{unicorn_bundle}"
+              unicorn_bin        "#{unicorn_bin}"
+              unicorn_options    "#{unicorn_options}"
+              unicorn_restart_sleep_time  #{unicorn_restart_sleep_time}
+
+              # Relative paths
+              app_subdir                         "#{app_subdir}"
+              unicorn_config_rel_path            "#{unicorn_config_rel_path}"
+              unicorn_config_filename            "#{unicorn_config_filename}"
+              unicorn_config_rel_file_path       "#{unicorn_config_rel_file_path}"
+              unicorn_config_stage_rel_file_path "#{unicorn_config_stage_rel_file_path}"
+
+              # Absolute paths
+              app_path                  "#{app_path}"
+              unicorn_pid               "#{unicorn_pid}"
+              bundle_gemfile            "#{bundle_gemfile}"
+              unicorn_config_path       "#{unicorn_config_path}"
+              unicorn_config_file_path  "#{unicorn_config_file_path}"
+              unicorn_config_stage_file_path
+              ->                        "#{unicorn_config_stage_file_path}"
             EOF
           end
 
