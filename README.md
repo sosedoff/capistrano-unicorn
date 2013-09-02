@@ -60,31 +60,31 @@ are set correctly.
 
 ### Environment parameters
 
-- `unicorn_env`             - Set basename of unicorn config `.rb` file to be used loaded from `unicorn_config_path`. Default to `rails_env` variable if set, otherwise `production`.
-- `unicorn_rack_env`        - Set the value which will be passed to unicorn via [the `-E` parameter as the Rack environment](http://unicorn.bogomips.org/unicorn_1.html). Valid values are `development`, `deployment`, and `none`. Default to `development` if `rails_env` is `development`, otherwise `deployment`.
+- `unicorn_env`             - Set basename of unicorn config `.rb` file to be used loaded from `unicorn_config_path`. Defaults to `rails_env` variable if set, otherwise `production`.
+- `unicorn_rack_env`        - Set the value which will be passed to unicorn via [the `-E` parameter as the Rack environment](http://unicorn.bogomips.org/unicorn_1.html). Valid values are `development`, `deployment`, and `none`. Defaults to `development` if `rails_env` is `development`, otherwise `deployment`.
 
 ### Execution parameters
 
-- `unicorn_user`            - Launch unicorn master as the specified user via `sudo`. Default to `nil`, which means no use of `sudo`, i.e. run as the user defined by the `user` variable.
-- `unicorn_roles`           - Define which roles to perform unicorn recipes on. Default to `:app`.
-- `unicorn_bundle`          - Set bundler command for unicorn. Default to `bundle`.
-- `unicorn_bin`             - Set unicorn executable file. Default to `unicorn`.
+- `unicorn_user`            - Launch unicorn master as the specified user via `sudo`. Defaults to `nil`, which means no use of `sudo`, i.e. run as the user defined by the `user` variable.
+- `unicorn_roles`           - Define which roles to perform unicorn recipes on. Defaults to `:app`.
+- `unicorn_bundle`          - Set bundler command for unicorn. Defaults to `bundle`.
+- `unicorn_bin`             - Set unicorn executable file. Defaults to `unicorn`.
 - `unicorn_options`         - Set any additional options to be passed to unicorn on startup.
 - `unicorn_restart_sleep_time` - Number of seconds to wait for (old) pidfile to show up when restarting unicorn. Defaults to 2.
 
 ### Relative path parameters
 
 - `app_subdir`              - If your app lives in a subdirectory 'rails' (say) of your repository, set this to `/rails` (the leading slash is required).
-- `unicorn_config_rel_path` - Set the directory path (relative to `app_path` - see below) where unicorn config files reside. Default to `config`.
-- `unicorn_config_filename` - Set the filename of the unicorn config file loaded from `unicorn_config_path`. Should not be present in multistage installations. Default to `unicorn.rb`.
+- `unicorn_config_rel_path` - Set the directory path (relative to `app_path` - see below) where unicorn config files reside. Defaults to `config`.
+- `unicorn_config_filename` - Set the filename of the unicorn config file loaded from `unicorn_config_path`. Should not be present in multistage installations. Defaults to `unicorn.rb`.
 
 ### Absolute path parameters
 
-- `app_path`                - Set path to app root. Default to `current_path + app_subdir`.
+- `app_path`                - Set path to app root. Defaults to `current_path + app_subdir`.
 - `unicorn_pid`             - Set unicorn PID file path. By default, attempts to auto-detect from unicorn config file. On failure, falls back to value in `unicorn_default_pid`
-- `unicorn_default_pid`     - See above. Default to `#{current_path}/tmp/pids/unicorn.pid`
-- `bundle_gemfile`          - Set path to Gemfile. Default to `#{app_path}/Gemfile`
-- `unicorn_config_path`     - Set the directory where unicorn config files reside. Default to `#{current_path}/config`.
+- `unicorn_default_pid`     - See above. Defaults to `#{current_path}/tmp/pids/unicorn.pid`
+- `bundle_gemfile`          - Set path to Gemfile. Defaults to `#{app_path}/Gemfile`
+- `unicorn_config_path`     - Set the directory where unicorn config files reside. Defaults to `#{current_path}/config`.
 
 ## Available Tasks
 
