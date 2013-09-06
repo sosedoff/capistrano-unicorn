@@ -1,9 +1,14 @@
-# Capistrano Unicorn [![Build Status](https://travis-ci.org/sosedoff/capistrano-unicorn.png?branch=master)](https://travis-ci.org/sosedoff/capistrano-unicorn) [![Gem Version](https://badge.fury.io/rb/capistrano-unicorn.png)](http://badge.fury.io/rb/capistrano-unicorn) [![Code Climate](https://codeclimate.com/github/sosedoff/capistrano-unicorn.png)](https://codeclimate.com/github/sosedoff/capistrano-unicorn)
+# Capistrano Unicorn
 
 Capistrano plugin that integrates Unicorn tasks into capistrano deployment script.
 
-**Developers:** Please consider contributing your forked changes, or opening an issue if there is no existing relevant one.
-There are a lot of forks--we'd love to reabsorb some of the issues/solutions the community has encountered.
+**Developers:** Please consider contributing your forked changes, or opening an
+issue if there is no existing relevant one. There are a lot of forks--we'd love
+to reabsorb some of the issues/solutions the community has encountered.
+
+[![Build Status](https://travis-ci.org/sosedoff/capistrano-unicorn.png?branch=master)](https://travis-ci.org/sosedoff/capistrano-unicorn)
+[![Gem Version](https://badge.fury.io/rb/capistrano-unicorn.png)](http://badge.fury.io/rb/capistrano-unicorn)
+[![Code Climate](https://codeclimate.com/github/sosedoff/capistrano-unicorn.png)](https://codeclimate.com/github/sosedoff/capistrano-unicorn)
 
 ## Usage
 
@@ -32,9 +37,11 @@ after 'deploy:restart', 'unicorn:reload'   # app IS NOT preloaded
 after 'deploy:restart', 'unicorn:restart'  # app preloaded
 ```
 
-Create a new configuration file `config/unicorn.rb` or `config/unicorn/STAGE.rb`, where stage is your deployment environment.
+Create a new configuration file `config/unicorn.rb` or `config/unicorn/STAGE.rb`, 
+where stage is your deployment environment.
 
-Example config - [examples/rails3.rb](https://github.com/sosedoff/capistrano-unicorn/blob/master/examples/rails3.rb). Please refer to unicorn documentation for more examples and configuration options.
+Example config - [examples/rails3.rb](https://github.com/sosedoff/capistrano-unicorn/blob/master/examples/rails3.rb). 
+Please refer to unicorn documentation for more examples and configuration options.
 
 ### Deploy
 
