@@ -1,3 +1,5 @@
+require 'tempfile'
+
 require 'capistrano'
 require 'capistrano/version'
 
@@ -11,24 +13,89 @@ module CapistranoUnicorn
       'unicorn:reload',
       'unicorn:shutdown',
       'unicorn:add_worker',
-      'unicorn:remove_worker'
+      'unicorn:remove_worker',
+      'unicorn:show_vars',
     ]
 
     def self.load_into(capistrano_config)
       capistrano_config.load do
         before(CapistranoIntegration::TASKS) do
-          _cset(:app_env)                    { (fetch(:rails_env) rescue 'production') }
-          _cset(:app_subdir)                 { '' }
-          _cset(:app_path)                   { fetch(:current_path) + fetch(:app_subdir) }
-          _cset(:unicorn_pid)                { "#{fetch(:app_path)}/tmp/pids/unicorn.pid" }
-          _cset(:unicorn_env)                { fetch(:app_env) }
-          _cset(:unicorn_bin)                { "unicorn" }
-          _cset(:unicorn_bundle)             { fetch(:bundle_cmd) rescue 'bundle' }
-          _cset(:bundle_gemfile)             { fetch(:app_path) + '/Gemfile' }
-          _cset(:unicorn_restart_sleep_time) { 2 }
+          # Environments
+          _cset(:unicorn_env)                { fetch(:rails_env, 'production' ) }
+          _cset(:unicorn_rack_env) do
+            # Following recommendations from http://unicorn.bogomips.org/unicorn_1.html
+            fetch(:rails_env) == 'development' ? 'development' : 'deployment'
+          end
+
+          # Execution
           _cset(:unicorn_user)               { nil }
-          _cset(:unicorn_config_path)        { "#{fetch(:app_path)}/config" }
+          _cset(:unicorn_bundle)             { fetch(:bundle_cmd, "bundle") }
+          _cset(:unicorn_bin)                { "unicorn" }
+          _cset(:unicorn_options)            { '' }
+          _cset(:unicorn_restart_sleep_time) { 2 }
+
+          # Relative paths
+          _cset(:app_subdir)                 { '' }
+          _cset(:unicorn_config_rel_path)    { "config" }
           _cset(:unicorn_config_filename)    { "unicorn.rb" }
+          _cset(:unicorn_config_rel_file_path) \
+                                             { unicorn_config_rel_path + '/' + unicorn_config_filename }
+          _cset(:unicorn_config_stage_rel_file_path) \
+                                             { [ unicorn_config_rel_path, 'unicorn',
+                                                 "#{unicorn_env}.rb" ].join('/') }
+
+          # Absolute paths
+          # If you find the following confusing, try running 'cap unicorn:show_vars' -
+          # it might help :-)
+          _cset(:app_path)                   { current_path + app_subdir }
+          _cset(:bundle_gemfile)             { app_path + '/Gemfile' }
+          _cset(:unicorn_config_path)        { app_path + '/' + unicorn_config_rel_path }
+          _cset(:unicorn_config_file_path)   { app_path + '/' + unicorn_config_rel_file_path }
+          _cset(:unicorn_config_stage_file_path) \
+                                             { app_path + '/' + unicorn_config_stage_rel_file_path }
+          _cset(:unicorn_default_pid)        { app_path + "/tmp/pids/unicorn.pid" }
+          _cset(:unicorn_pid) do
+            extracted_pid = extract_pid_file
+            if extracted_pid
+              extracted_pid
+            else
+              logger.important "err :: failed to auto-detect pid from #{local_unicorn_config}"
+              logger.important "err :: falling back to default: #{unicorn_default_pid}"
+              unicorn_default_pid
+            end
+          end
+        end
+
+        def local_unicorn_config
+          File.exist?(unicorn_config_rel_file_path) ?
+              unicorn_config_rel_file_path
+            : unicorn_config_stage_rel_file_path
+        end
+
+        def extract_pid_file
+          tmp = Tempfile.new('unicorn.rb')
+          begin
+            conf = local_unicorn_config
+            tmp.write <<-EOF.gsub(/^ */, '')
+              config_file = "#{conf}"
+
+              # stub working_directory to avoid chdir failure since this will
+              # run client-side:
+              def working_directory(path); end
+
+              instance_eval(File.read(config_file), config_file) if config_file
+              puts set[:pid]
+              exit 0
+            EOF
+            tmp.close
+            extracted_pid = `unicorn -c "#{tmp.path}"`
+            $?.success? ? extracted_pid.rstrip : nil
+          rescue StandardError => e
+            return nil
+          ensure
+            tmp.close
+            tmp.unlink
+          end
         end
 
         # Check if a remote process exists using its pid file
@@ -98,22 +165,19 @@ module CapistranoUnicorn
         # Start the Unicorn server
         #
         def start_unicorn
-          primary_config_path = "#{unicorn_config_path}/#{unicorn_config_filename}"
-          secondary_config_path = "#{unicorn_config_path}/unicorn/#{unicorn_env}.rb"
-
-          script = <<-END
-            if [ -e #{primary_config_path} ]; then
-              UNICORN_CONFIG_PATH=#{primary_config_path};
+          %Q%
+            if [ -e "#{unicorn_config_file_path}" ]; then
+              UNICORN_CONFIG_PATH=#{unicorn_config_file_path};
             else
-              if [ -e #{secondary_config_path} ]; then
-                UNICORN_CONFIG_PATH=#{secondary_config_path};
+              if [ -e "#{unicorn_config_stage_file_path}" ]; then
+                UNICORN_CONFIG_PATH=#{unicorn_config_stage_file_path};
               else
-                echo "Config file for \"#{unicorn_env}\" environment was not found at either \"#{primary_config_path}\" or \"#{secondary_config_path}\"";
+                echo "Config file for "#{unicorn_env}" environment was not found at either "#{unicorn_config_file_path}" or "#{unicorn_config_stage_file_path}"";
                 exit 1;
               fi;
             fi;
 
-            if [ -e #{unicorn_pid} ]; then
+            if [ -e "#{unicorn_pid}" ]; then
               if #{try_unicorn_user} kill -0 `cat #{unicorn_pid}` > /dev/null 2>&1; then
                 echo "Unicorn is already running!";
                 exit 0;
@@ -123,10 +187,8 @@ module CapistranoUnicorn
             fi;
 
             echo "Starting Unicorn...";
-            cd #{app_path} && #{try_unicorn_user} BUNDLE_GEMFILE=#{bundle_gemfile} #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{app_env} -D;
-          END
-
-          script
+            cd #{app_path} && #{try_unicorn_user} RAILS_ENV=#{rails_env} BUNDLE_GEMFILE=#{bundle_gemfile} #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{unicorn_rack_env} -D #{unicorn_options};
+          %
         end
 
         def duplicate_unicorn
@@ -150,6 +212,40 @@ module CapistranoUnicorn
         # Unicorn cap tasks
         #
         namespace :unicorn do
+          desc 'Debug Unicorn variables'
+          task :show_vars, :roles => :app do
+            puts <<-EOF.gsub(/^ +/, '')
+
+              # Environments
+              rails_env          "#{rails_env}"
+              unicorn_env        "#{unicorn_env}"
+              unicorn_rack_env   "#{unicorn_rack_env}"
+
+              # Execution
+              unicorn_user       #{unicorn_user.inspect}
+              unicorn_bundle     "#{unicorn_bundle}"
+              unicorn_bin        "#{unicorn_bin}"
+              unicorn_options    "#{unicorn_options}"
+              unicorn_restart_sleep_time  #{unicorn_restart_sleep_time}
+
+              # Relative paths
+              app_subdir                         "#{app_subdir}"
+              unicorn_config_rel_path            "#{unicorn_config_rel_path}"
+              unicorn_config_filename            "#{unicorn_config_filename}"
+              unicorn_config_rel_file_path       "#{unicorn_config_rel_file_path}"
+              unicorn_config_stage_rel_file_path "#{unicorn_config_stage_rel_file_path}"
+
+              # Absolute paths
+              app_path                  "#{app_path}"
+              unicorn_pid               "#{unicorn_pid}"
+              bundle_gemfile            "#{bundle_gemfile}"
+              unicorn_config_path       "#{unicorn_config_path}"
+              unicorn_config_file_path  "#{unicorn_config_file_path}"
+              unicorn_config_stage_file_path
+              ->                        "#{unicorn_config_stage_file_path}"
+            EOF
+          end
+
           desc 'Start Unicorn master process'
           task :start, :roles => unicorn_roles, :except => {:no_release => true} do
             run start_unicorn
