@@ -1,4 +1,4 @@
-# Capistrano Unicorn [![Build Status](https://travis-ci.org/sosedoff/capistrano-unicorn.png?branch=master)](https://travis-ci.org/sosedoff/capistrano-unicorn)
+# Capistrano Unicorn [![Build Status](https://travis-ci.org/sosedoff/capistrano-unicorn.png?branch=master)](https://travis-ci.org/sosedoff/capistrano-unicorn) [![Gem Version](https://badge.fury.io/rb/capistrano-unicorn.png)](http://badge.fury.io/rb/capistrano-unicorn) [![Code Climate](https://codeclimate.com/github/sosedoff/capistrano-unicorn.png)](https://codeclimate.com/github/sosedoff/capistrano-unicorn)
 
 Capistrano plugin that integrates Unicorn tasks into capistrano deployment script.
 
