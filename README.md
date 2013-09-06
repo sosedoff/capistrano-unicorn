@@ -136,26 +136,32 @@ using the [lazy evaluation form of `set`](https://github.com/capistrano/capistra
 
 So `config/deploy.rb` file would contain something like:
 
-    set :stages, %w(production staging)
-    set :default_stage, "staging"
-    require 'capistrano/ext/multistage'
+```ruby
+set :stages, %w(production staging)
+set :default_stage, "staging"
+require 'capistrano/ext/multistage'
 
-    role(:web) { domain }
-    role(:app) { domain }
-    role(:db, :primary => true) { domain }
+role(:web) { domain }
+role(:app) { domain }
+role(:db, :primary => true) { domain }
 
-    set(:deploy_to)    { "/home/#{user}/#{application}/#{fetch :rails_env}" }
-    set(:current_path) { File.join(deploy_to, current_dir) }
+set(:deploy_to)    { "/home/#{user}/#{application}/#{fetch :rails_env}" }
+set(:current_path) { File.join(deploy_to, current_dir) }
+```
 
 Then `config/deploy/production.rb` would contain something like:
 
-    set :domain,      "app.mydomain.com"
-    set :rails_env,   "production"
+```ruby
+set :domain,      "app.mydomain.com"
+set :rails_env,   "production"
+```
 
 and `config/deploy/staging.rb` would only need to contain something like:
 
-    set :domain,      "app.staging.mydomain.com"
-    set :rails_env,   "staging"
+```ruby
+set :domain,      "app.staging.mydomain.com"
+set :rails_env,   "staging"
+```
 
 Nice and clean!
 
