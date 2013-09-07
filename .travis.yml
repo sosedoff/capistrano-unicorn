@@ -3,6 +3,5 @@ rvm:
   - 1.9.3
   - 2.0.0
 
-before_install: "gem list"
-before_script: "gem list"
+before_script: "bundle exec gem list"
 install: "bundle install --path .bundle"
