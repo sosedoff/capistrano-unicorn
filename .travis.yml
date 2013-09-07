@@ -4,5 +4,5 @@ rvm:
   - 2.0.0
 
 before_install: "gem list"
-after_install: "gem list"
+before_script: "gem list"
 install: "bundle install --path .bundle"
