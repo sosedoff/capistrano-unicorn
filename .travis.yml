@@ -2,3 +2,9 @@ rvm:
   - 1.9.2
   - 1.9.3
   - 2.0.0
+
+before_install:
+  - gem list
+
+install:
+  - bundle install --path .bundle
