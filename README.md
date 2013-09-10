@@ -93,6 +93,12 @@ are set correctly.
 - `bundle_gemfile`          - Set path to Gemfile. Defaults to `#{app_path}/Gemfile`
 - `unicorn_config_path`     - Set the directory where unicorn config files reside. Defaults to `#{current_path}/config`.
 
+### Zero Downtime Deployment Options
+
+* `unicorn:restart`: :-1: This can sort of support it with a configurable timeout, which may not be reliable.
+* `unicorn:reload`: :question: Can anyone testify to its zero-downtime support?
+* `unicorn:duplicate`: :+1: If you install the Unicorn `before_fork` hook, then yes! See: https://github.com/sosedoff/capistrano-unicorn/issues/40#issuecomment-16011353
+
 ## Available Tasks
 
 To get a list of all capistrano tasks, run `cap -T`:
