@@ -120,7 +120,7 @@ cap unicorn:stop                      # Stop Unicorn
 To execute test suite run:
 
 ```
-bundle exec rake test
+bundle exec rake test:spec
 ```
 
 ### Multistage
