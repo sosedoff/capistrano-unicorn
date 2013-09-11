@@ -1,9 +1,10 @@
 module CapistranoUnicorn
   module Utility
+
     def local_unicorn_config
       File.exist?(unicorn_config_rel_file_path) ?
-        unicorn_config_rel_file_path
-      : unicorn_config_stage_rel_file_path
+          unicorn_config_rel_file_path
+        : unicorn_config_stage_rel_file_path
     end
 
     def extract_pid_file
@@ -11,15 +12,15 @@ module CapistranoUnicorn
       begin
         conf = local_unicorn_config
         tmp.write <<-EOF.gsub(/^ */, '')
-              config_file = "#{conf}"
+          config_file = "#{conf}"
 
-              # stub working_directory to avoid chdir failure since this will
-              # run client-side:
-              def working_directory(path); end
+          # stub working_directory to avoid chdir failure since this will
+          # run client-side:
+          def working_directory(path); end
 
-              instance_eval(File.read(config_file), config_file) if config_file
-              puts set[:pid]
-              exit 0
+          instance_eval(File.read(config_file), config_file) if config_file
+          puts set[:pid]
+          exit 0
         EOF
         tmp.close
         extracted_pid = `unicorn -c "#{tmp.path}"`
@@ -85,12 +86,12 @@ module CapistranoUnicorn
     #
     def kill_unicorn(signal)
       script = <<-END
-            if #{unicorn_is_running?}; then
-              echo "Stopping Unicorn...";
-      #{unicorn_send_signal(signal)};
-            else
-              echo "Unicorn is not running.";
-            fi;
+        if #{unicorn_is_running?}; then
+          echo "Stopping Unicorn...";
+          #{unicorn_send_signal(signal)};
+        else
+          echo "Unicorn is not running.";
+        fi;
       END
 
       script
@@ -100,39 +101,39 @@ module CapistranoUnicorn
     #
     def start_unicorn
       %Q%
-            if [ -e "#{unicorn_config_file_path}" ]; then
-              UNICORN_CONFIG_PATH=#{unicorn_config_file_path};
-            else
-              if [ -e "#{unicorn_config_stage_file_path}" ]; then
-                UNICORN_CONFIG_PATH=#{unicorn_config_stage_file_path};
-              else
-                echo "Config file for "#{unicorn_env}" environment was not found at either "#{unicorn_config_file_path}" or "#{unicorn_config_stage_file_path}"";
-                exit 1;
-              fi;
-            fi;
+        if [ -e "#{unicorn_config_file_path}" ]; then
+          UNICORN_CONFIG_PATH=#{unicorn_config_file_path};
+        else
+          if [ -e "#{unicorn_config_stage_file_path}" ]; then
+            UNICORN_CONFIG_PATH=#{unicorn_config_stage_file_path};
+          else
+            echo "Config file for "#{unicorn_env}" environment was not found at either "#{unicorn_config_file_path}" or "#{unicorn_config_stage_file_path}"";
+            exit 1;
+          fi;
+        fi;
 
-            if [ -e "#{unicorn_pid}" ]; then
-              if #{try_unicorn_user} kill -0 `cat #{unicorn_pid}` > /dev/null 2>&1; then
-                echo "Unicorn is already running!";
-                exit 0;
-              fi;
+        if [ -e "#{unicorn_pid}" ]; then
+          if #{try_unicorn_user} kill -0 `cat #{unicorn_pid}` > /dev/null 2>&1; then
+            echo "Unicorn is already running!";
+            exit 0;
+          fi;
 
-      #{try_unicorn_user} rm #{unicorn_pid};
-            fi;
+          #{try_unicorn_user} rm #{unicorn_pid};
+        fi;
 
-            echo "Starting Unicorn...";
-            cd #{app_path} && #{try_unicorn_user} RAILS_ENV=#{rails_env} BUNDLE_GEMFILE=#{bundle_gemfile} #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{unicorn_rack_env} -D #{unicorn_options};
+        echo "Starting Unicorn...";
+        cd #{app_path} && #{try_unicorn_user} RAILS_ENV=#{rails_env} BUNDLE_GEMFILE=#{bundle_gemfile} #{unicorn_bundle} exec #{unicorn_bin} -c $UNICORN_CONFIG_PATH -E #{unicorn_rack_env} -D #{unicorn_options};
       %
     end
 
     def duplicate_unicorn
       script = <<-END
-            if #{unicorn_is_running?}; then
-              echo "Duplicating Unicorn...";
-      #{unicorn_send_signal('USR2')};
-            else
-      #{start_unicorn}
-            fi;
+        if #{unicorn_is_running?}; then
+          echo "Duplicating Unicorn...";
+          #{unicorn_send_signal('USR2')};
+        else
+          #{start_unicorn}
+        fi;
       END
 
       script
@@ -141,5 +142,6 @@ module CapistranoUnicorn
     def unicorn_roles
       defer{ fetch(:unicorn_roles, :app) }
     end
+
   end
 end
