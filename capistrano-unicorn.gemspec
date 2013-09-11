@@ -1,21 +1,22 @@
 # -*- encoding: utf-8 -*-
 require File.expand_path('../lib/capistrano-unicorn/version', __FILE__)
 
-Gem::Specification.new do |gem|
-  gem.name        = 'capistrano-unicorn'
-  gem.version     = CapistranoUnicorn::VERSION.dup
-  gem.author      = 'Dan Sosedoff'
-  gem.email       = 'dan.sosedoff@gmail.com'
-  gem.homepage    = 'https://github.com/sosedoff/capistrano-unicorn'
-  gem.summary     = %q{Unicorn integration for Capistrano}
-  gem.description = %q{Capistrano plugin that integrates Unicorn server tasks.}
+Gem::Specification.new do |spec|
+  spec.name        = 'capistrano-unicorn'
+  spec.version     = CapistranoUnicorn::VERSION.dup
+  spec.author      = 'Dan Sosedoff'
+  spec.email       = 'dan.sosedoff@gmail.com'
+  spec.homepage    = 'https://github.com/sosedoff/capistrano-unicorn'
+  spec.summary     = %q{Unicorn integration for Capistrano}
+  spec.description = %q{Capistrano plugin that integrates Unicorn server tasks.}
+  spec.license     = 'MIT'
 
-  gem.files         = `git ls-files`.split("\n")
-  gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
-  gem.executables   = `git ls-files -- bin/*`.split("\n").map{|f| File.basename(f)}
-  gem.require_paths = ['lib']
+  spec.files         = `git ls-files`.split("\n")
+  spec.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
+  spec.executables   = `git ls-files -- bin/*`.split("\n").map{|f| File.basename(f)}
+  spec.require_paths = ['lib']
 
-  gem.add_development_dependency 'rake'
-  
-  gem.add_runtime_dependency 'capistrano'
+  spec.add_development_dependency 'rake'
+  spec.add_development_dependency 'unicorn'
+  spec.add_runtime_dependency     'capistrano'
 end
