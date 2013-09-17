@@ -33,7 +33,7 @@ describe CapistranoUnicorn::Config, "loaded into a configuration" do
 
         it "should default to a sensible pid file when auto-detection failed" do
           @configuration.should_receive(shell).with(/unicorn -c /).and_return('') do |cmd|
-            $?.should_receive(:success?).and_return(false)
+            `false` # Simulate failure by setting $?
           end
           @configuration.logger.stub(:important)
           @configuration.fetch(:unicorn_pid).should == app_path + "/tmp/pids/unicorn.pid"
@@ -53,7 +53,7 @@ describe CapistranoUnicorn::Config, "loaded into a configuration" do
               tmpfile = $~[1]
               tmpfile.should include("tmp")
               File.read(tmpfile).should include(%!config_file = "#{config_file}"!)
-              $?.should_receive(:success?).and_return(true)
+              `true` # Simulate success by setting $?
               pid_file
             end
             @configuration.fetch(:unicorn_pid).should == pid_file
