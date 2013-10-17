@@ -18,5 +18,5 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "rake"
   spec.add_development_dependency "unicorn"
-  spec.add_runtime_dependency     "capistrano"
+  spec.add_runtime_dependency     "capistrano", "< 3.0"
 end
