@@ -148,6 +148,8 @@ set :stages, %w(production staging)
 set :default_stage, "staging"
 require 'capistrano/ext/multistage'
 
+set(:unicorn_env) { rails_env }
+
 role(:web) { domain }
 role(:app) { domain }
 role(:db, :primary => true) { domain }
