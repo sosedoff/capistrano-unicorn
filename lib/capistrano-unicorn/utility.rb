@@ -2,35 +2,20 @@ module CapistranoUnicorn
   module Utility
 
     def local_unicorn_config
-      File.exist?(unicorn_config_rel_file_path) ?
-          unicorn_config_rel_file_path
-        : unicorn_config_stage_rel_file_path
+      File.exist?(unicorn_config_file_path) ?
+          unicorn_config_file_path
+        : unicorn_config_stage_file_path
     end
 
     def extract_pid_file
-      tmp = Tempfile.new('unicorn.rb')
-      begin
-        conf = local_unicorn_config
-        tmp.write <<-EOF.gsub(/^ */, '')
-          config_file = "#{conf}"
+      code = <<-EOC.gsub(/^ */, '').gsub(/\n/, '; ')
+        cfg = Unicorn::Configurator.new(:config_file => '#{local_unicorn_config}')
+        puts cfg.set[:pid]
+        exit 0
+      EOC
 
-          # stub working_directory to avoid chdir failure since this will
-          # run client-side:
-          def working_directory(path); end
-
-          instance_eval(File.read(config_file), config_file) if config_file
-          puts set[:pid]
-          exit 0
-        EOF
-        tmp.close
-        extracted_pid = `unicorn -c "#{tmp.path}"`
-        $?.success? ? extracted_pid.rstrip : nil
-      rescue StandardError => e
-        return nil
-      ensure
-        tmp.close
-        tmp.unlink
-      end
+      pid = capture("cd #{current_path} && unicorn -e \"#{code}\"", :roles => unicorn_roles).rstrip
+      pid == "unset" ? nil : File.expand_path(pid, app_path)
     end
 
     # Check if a remote process exists using its pid file
