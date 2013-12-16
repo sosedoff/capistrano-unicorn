@@ -36,7 +36,16 @@ module CapistranoUnicorn
           _cset(:unicorn_config_stage_file_path) \
             { app_path + '/' + unicorn_config_stage_rel_file_path }
           _cset(:unicorn_default_pid)        { app_path + "/tmp/pids/unicorn.pid" }
-          _cset(:unicorn_pid) { extract_pid_file || unicorn_default_pid }
+          _cset(:unicorn_pid) do
+            extracted_pid = extract_pid_file
+            if extracted_pid
+              extracted_pid
+            else
+              logger.important "err :: failed to auto-detect pid from #{local_unicorn_config}"
+              logger.important "err :: falling back to default: #{unicorn_default_pid}"
+              unicorn_default_pid
+            end
+          end
       end
     end
   end
