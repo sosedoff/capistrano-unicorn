@@ -14,7 +14,7 @@ module CapistranoUnicorn
         exit 0
       EOC
 
-      pid = capture("cd #{current_path} && unicorn -e \"#{code}\"", :roles => unicorn_roles).rstrip
+      pid = capture("cd #{app_path} && unicorn -e \"#{code}\"", :roles => unicorn_roles).rstrip
       pid == "unset" ? nil : File.expand_path(pid, app_path)
     end
 
