@@ -44,14 +44,14 @@ describe CapistranoUnicorn::Config, "loaded into a configuration" do
           which_config = primary_exists ? 'primary' : 'stage'
           it "should auto-detect pid file from #{which_config} unicorn config" do
             # Tempfile.new in Ruby 1.9.2 will call File.exist?
-            allow(File).to receive(:exist?).with(/tmp/)
+            allow(File).to receive(:exist?).with(/#{Dir.tmpdir}/)
 
             File.should_receive(:exist?).with('config/unicorn.rb').and_return(primary_exists)
             tmpfile = nil
             @configuration.should_receive(shell).with(/unicorn -c /) do |cmd|
               (cmd =~ /^unicorn -c "(.+)"$/).should be_true
               tmpfile = $~[1]
-              tmpfile.should include("tmp")
+              tmpfile.should include(Dir.tmpdir)
               File.read(tmpfile).should include(%!config_file = "#{config_file}"!)
               `true` # Simulate success by setting $?
               pid_file
