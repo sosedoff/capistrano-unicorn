@@ -6,7 +6,7 @@ module CapistranoUnicorn
         _cset(:unicorn_env)                { fetch(:rails_env, 'production' ) }
         _cset(:unicorn_rack_env) do
           # Following recommendations from http://unicorn.bogomips.org/unicorn_1.html
-          fetch(:rails_env) == 'development' ? 'development' : 'deployment'
+          fetch(:rails_env) || 'deployment'
         end
 
         # Execution
